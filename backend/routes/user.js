@@ -87,7 +87,7 @@ router.get('/dashboard', requireAuth, async (req, res) => {
 
     const { data: issues, error } = await supabase
       .from('saved_issues')
-      .select('*')
+      .select('id, user_id, issue_title, repo_name, issue_url, status, created_at')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
 
@@ -152,6 +152,66 @@ router.patch('/issues/:issueId', requireAuth, async (req, res) => {
     return res.json(data)
   } catch (err) {
     console.error('[user] PATCH /issues/:issueId failed:', err.message)
+    return res.status(500).json({ error: err.message || 'Internal server error' })
+  }
+})
+
+// ── POST /api/user/seed-demo ─────────────────────────────────────────────────
+
+router.post('/seed-demo', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.id
+
+    const demoIssues = [
+      {
+        user_id: userId,
+        issue_title: 'Fix React component rendering bug',
+        repo_name: 'facebook/react',
+        issue_url: 'https://github.com/facebook/react/issues/28000',
+        status: 'done',
+      },
+      {
+        user_id: userId,
+        issue_title: 'Add dark mode toggle',
+        repo_name: 'tailwindlabs/tailwindcss',
+        issue_url: 'https://github.com/tailwindlabs/tailwindcss/issues/1420',
+        status: 'done',
+      },
+      {
+        user_id: userId,
+        issue_title: 'Migrate to Vite 5',
+        repo_name: 'vitejs/vite',
+        issue_url: 'https://github.com/vitejs/vite/issues/15123',
+        status: 'attempting',
+      },
+      {
+        user_id: userId,
+        issue_title: 'Support markdown in comments',
+        repo_name: 'supabase/supabase',
+        issue_url: 'https://github.com/supabase/supabase/issues/890',
+        status: 'saved',
+      },
+      {
+        user_id: userId,
+        issue_title: 'Update outdated documentation',
+        repo_name: 'vercel/next.js',
+        issue_url: 'https://github.com/vercel/next.js/issues/62010',
+        status: 'saved',
+      },
+    ]
+
+    const { error } = await supabase
+      .from('saved_issues')
+      .insert(demoIssues)
+
+    if (error) {
+      console.error('[user] Seed demo failed:', error.message)
+      return res.status(500).json({ error: 'Failed to seed demo data' })
+    }
+
+    return res.json({ message: 'Demo data seeded successfully', count: demoIssues.length })
+  } catch (err) {
+    console.error('[user] POST /seed-demo failed:', err.message)
     return res.status(500).json({ error: err.message || 'Internal server error' })
   }
 })

@@ -3,6 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 import Navbar from '../components/Navbar.jsx'
 import supabase from '../lib/supabase.js'
+import confetti from 'canvas-confetti'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'
 
@@ -144,6 +145,16 @@ export default function Dashboard({ user, signIn, signOut }) {
         throw new Error(updated.error || 'Failed to update status')
       }
 
+      // ── First PR Celebration! ──
+      if (dashData?.totalDone === 0 && newStatus === 'done') {
+        confetti({
+          particleCount: 150,
+          spread: 80,
+          origin: { y: 0.6 },
+          colors: ['#238636', '#58a6ff', '#f0f6fc', '#f85149'],
+        })
+      }
+
       // Update local state
       setDashData((prev) => {
         if (!prev) return prev
@@ -167,6 +178,29 @@ export default function Dashboard({ user, signIn, signOut }) {
       setError(err.message)
     } finally {
       setUpdatingId(null)
+    }
+  }
+
+  // ── Seed Demo Data ──────────────────────────────────────────────────────
+
+  const handleSeedDemo = async () => {
+    try {
+      setLoading(true)
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) return
+
+      const res = await fetch(`${BACKEND_URL}/api/user/seed-demo`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      })
+      if (!res.ok) throw new Error('Failed to seed demo data')
+      
+      // Reload the page to fetch the new dashboard data
+      window.location.reload()
+    } catch (err) {
+      console.error('[Dashboard] Seed failed:', err.message)
+      setError(err.message)
+      setLoading(false)
     }
   }
 
@@ -312,10 +346,17 @@ export default function Dashboard({ user, signIn, signOut }) {
               </div>
 
               {dashData.issues.length === 0 ? (
-                <div className="p-10 text-center">
-                  <p className="text-sm text-[#8b949e]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                <div className="p-10 text-center flex flex-col items-center justify-center">
+                  <p className="text-sm text-[#8b949e] mb-6" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                     No saved issues yet. Head to Explore to find your first issue!
                   </p>
+                  <button
+                    onClick={handleSeedDemo}
+                    className="px-4 py-2 bg-[#1f6feb]/10 text-[#58a6ff] hover:bg-[#1f6feb]/20 border border-[#1f6feb]/30 rounded-lg text-sm font-semibold transition-all"
+                    style={{ fontFamily: "'DM Sans', sans-serif" }}
+                  >
+                    Seed Demo Data
+                  </button>
                 </div>
               ) : (
                 <ul className="divide-y divide-[#21262d]">
