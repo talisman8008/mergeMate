@@ -76,11 +76,11 @@ export default function IssueRow({ issue }) {
   return (
     <div 
       onClick={handleRowClick}
-      className="group relative flex items-center justify-between py-6 border-b border-[var(--border)] hover:bg-[rgba(255,255,255,0.02)] transition-colors cursor-pointer overflow-hidden
-        before:absolute before:left-0 before:top-0 before:bottom-0 before:w-[2px] before:bg-transparent hover:before:bg-[#52B788] before:transition-colors"
+      className="issue-tile group relative flex items-center justify-between py-6 px-4 md:px-6 mb-4 rounded-lg border border-[var(--border)] hover:bg-[rgba(255,255,255,0.02)] transition-colors cursor-pointer overflow-hidden
+        before:absolute before:left-0 before:top-0 before:bottom-0 before:w-[4px] before:bg-transparent hover:before:bg-[#52B788] before:transition-colors"
     >
       {/* Left Column */}
-      <div className="flex-1 min-w-0 pr-6 pl-4 md:pl-6">
+      <div className="flex-1 min-w-0 pr-6">
         <div className="font-mono text-[11px] uppercase tracking-widest text-[#5C554D] mb-1.5 truncate">
           {repo_name}
         </div>

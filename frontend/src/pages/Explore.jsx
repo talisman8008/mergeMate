@@ -160,7 +160,7 @@ export default function Explore() {
             {/* Issue list */}
             {!noLanguagesSelected && !error && (
               <>
-                <div className="flex flex-col border-t border-[var(--border)]">
+                <div className="flex flex-col">
                   {issues.map((issue) => (
                     <IssueRow key={`${issue.repo_name}-${issue.number}-${issue.id}`} issue={issue} />
                   ))}

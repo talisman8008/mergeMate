@@ -8,11 +8,11 @@
   --color-elevated: var(--surface-elevated);
   --color-border-subtle: var(--border);
   --color-border-hover: var(--border-hover);
-  
+
   --color-text-primary: var(--text);
   --color-text-secondary: var(--text-secondary);
   --color-text-muted: var(--text-muted);
-  
+
   --color-accent-blue: var(--teal);
   --color-accent-green: var(--green);
   --color-accent-amber: var(--accent-amber);
@@ -48,6 +48,10 @@ html.light {
   --teal: #0D9488;
 }
 
+html.light .issue-tile {
+  border: 1px solid #000 !important;
+}
+
 .landing {
   --landing-canvas: #F5F2EB;
   --landing-surface: #EDEAE0;
@@ -69,7 +73,14 @@ body {
 }
 
 @media (pointer: fine) {
-  body, a, button, input, select, textarea, [role="button"] {
+
+  body,
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  [role="button"] {
     cursor: none !important;
   }
 }
@@ -89,6 +100,7 @@ body {
 .btn-scale {
   transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1), background-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 .btn-scale:active {
   transform: scale(0.97);
 }
