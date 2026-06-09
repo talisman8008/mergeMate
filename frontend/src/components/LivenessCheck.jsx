@@ -1,23 +1,29 @@
 function getBadgeConfig(count) {
-  if (count === 0) return { label: 'Fresh',   bg: 'bg-[#238636]/15',  border: 'border-[#238636]/40', text: 'text-[#238636]',  icon: '✦' }
-  if (count <= 2)  return { label: 'Active',  bg: 'bg-[#d29922]/15',  border: 'border-[#d29922]/40', text: 'text-[#d29922]',  icon: '⚡' }
-  if (count <= 5)  return { label: 'Crowded', bg: 'bg-[#e3702a]/15',  border: 'border-[#e3702a]/40', text: 'text-[#e3702a]',  icon: '⚠' }
-  return           { label: 'Avoid',  bg: 'bg-[#f85149]/15',  border: 'border-[#f85149]/40', text: 'text-[#f85149]',  icon: '✕' }
+  if (count === 0) return { label: 'No competition', color: 'var(--green)', icon: '✓' }
+  if (count <= 2) return { label: `${count} competing`, color: 'var(--accent-amber)', icon: '⚡' }
+  return { label: `${count} competing`, color: 'var(--red)', icon: '✕' }
 }
 
 export default function LivenessCheck({ openPRCount }) {
   const count = openPRCount ?? 0
-  const { label, bg, border, text, icon } = getBadgeConfig(count)
+  const { label, color, icon } = getBadgeConfig(count)
+
+  const tooltip = count === 0
+    ? 'No open PRs competing for this issue'
+    : `${count} open PR${count !== 1 ? 's' : ''} targeting this issue — move fast!`
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${bg} ${border} ${text}`}
-      style={{ fontFamily: "'Space Mono', monospace" }}
-      title={`${count} open PR${count !== 1 ? 's' : ''} targeting this issue`}
+      className="inline-flex items-center gap-1.5 text-[12px] font-medium px-2 py-0.5 rounded border"
+      style={{
+        color,
+        borderColor: `color-mix(in srgb, ${color} 20%, transparent)`,
+        backgroundColor: `color-mix(in srgb, ${color} 10%, transparent)`
+      }}
+      title={tooltip}
     >
-      <span aria-hidden="true">{icon}</span>
+      <span className="text-[10px]" aria-hidden="true">{icon}</span>
       {label}
-      <span className="opacity-70">({count})</span>
     </span>
   )
 }

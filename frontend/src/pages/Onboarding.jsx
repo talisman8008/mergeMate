@@ -294,7 +294,7 @@ export default function Onboarding() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="bg-[#0a0a0a] min-h-screen text-[#f0f6fc] flex flex-col">
+    <div className="bg-[var(--canvas)] min-h-screen text-[#f0f6fc] flex flex-col">
       {/* Nav */}
       <nav className="border-b border-[#30363d]">
         <div className="max-w-[1200px] mx-auto px-6 h-14 flex items-center">

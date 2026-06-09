@@ -62,7 +62,15 @@ Based on the above, return ONLY a JSON object with no markdown, no preamble, no 
   "whatToBuild": "plain English explanation of what the maintainer actually wants",
   "filesToTouch": "which files are likely involved based on the issue",
   "whatToAvoid": "based on recently rejected PRs, what not to do",
-  "difficulty": "Easy" or "Medium" or "Hard"
+  "difficulty": "Easy" or "Medium" or "Hard",
+  "estimatedTime": "e.g., 4 hours or 2 days",
+  "roadmap": [
+    {
+      "step": "Day 1 (or Step 1)",
+      "title": "Setup and Investigation",
+      "description": "..."
+    }
+  ]
 }`
 }
 

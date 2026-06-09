@@ -45,13 +45,21 @@ router.post('/after', async (req, res) => {
 
     const parsed = parsePRUrl(prUrl)
     if (!parsed) {
-      return res.status(400).json({ error: 'Invalid GitHub PR URL. Expected format: https://github.com/owner/repo/pull/123' })
+      return res.status(400).json({ error: 'Invalid PR URL. Format: https://github.com/owner/repo/pull/123' })
     }
 
     const { owner, repo, prNumber } = parsed
 
     // Fetch all PR data from GitHub
-    const prData = await fetchPRData({ owner, repo, prNumber })
+    let prData
+    try {
+      prData = await fetchPRData({ owner, repo, prNumber })
+    } catch (err) {
+      if (err.status === 404) {
+        return res.status(404).json({ error: 'Repository or PR not found. Make sure it is a public repo.' })
+      }
+      throw err // re-throw non-404 errors to outer catch
+    }
 
     // Analyse with Gemini
     const result = await analyzeContribution({
@@ -82,13 +90,21 @@ router.post('/before', async (req, res) => {
 
     const parsed = parseIssueUrl(issueUrl)
     if (!parsed) {
-      return res.status(400).json({ error: 'Invalid GitHub issue URL. Expected format: https://github.com/owner/repo/issues/456' })
+      return res.status(400).json({ error: 'Invalid issue URL. Format: https://github.com/owner/repo/issues/123' })
     }
 
     const { owner, repo, issueNumber } = parsed
 
     // Fetch issue data from GitHub
-    const issueData = await fetchIssueData({ owner, repo, issueNumber })
+    let issueData
+    try {
+      issueData = await fetchIssueData({ owner, repo, issueNumber })
+    } catch (err) {
+      if (err.status === 404) {
+        return res.status(404).json({ error: 'Repository or PR not found. Make sure it is a public repo.' })
+      }
+      throw err // re-throw non-404 errors to outer catch
+    }
 
     // Analyse with Gemini
     const result = await analyzeContribution({

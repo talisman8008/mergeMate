@@ -24,7 +24,7 @@ export default function FilterSidebar({ filters, onFilterChange }) {
   }
 
   const handleApply = () => {
-    onFilterChange({ ...filters, _applied: Date.now() })
+    // Handled by debounce in Explore.jsx now
   }
 
   const handleReset = () => {
@@ -32,64 +32,47 @@ export default function FilterSidebar({ filters, onFilterChange }) {
   }
 
   return (
-    <aside className="bg-[#161b22] border border-[#30363d] rounded-lg p-5 flex flex-col gap-6 w-full">
+    <aside className="bg-transparent md:bg-[var(--surface)] md:border border-[var(--border)] md:rounded-xl p-0 md:p-5 flex flex-col gap-6 w-full">
 
-      {/* Header */}
-      <h2
-        className="text-xs font-bold text-[#f0f6fc] tracking-widest uppercase"
-        style={{ fontFamily: "'Space Mono', monospace" }}
-      >
-        Filters
+      <h2 className="font-mono text-[13px] font-bold uppercase tracking-wider text-[var(--text)]">
+        FILTERS
       </h2>
 
       {/* Language filter */}
-      <div className="flex flex-col gap-3">
-        <p
-          className="text-xs font-semibold text-[#8b949e] uppercase tracking-wider"
-          style={{ fontFamily: "'Space Mono', monospace" }}
-        >
+      <div className="flex flex-col gap-2">
+        <p className="text-xs font-medium text-[var(--text-secondary)] mb-1">
           Language
         </p>
-        <div className="flex flex-col gap-2">
-          {LANGUAGES.map((lang) => (
-            <label
+        <div className="flex flex-wrap gap-2">
+          {LANGUAGES.map(lang => (
+            <button
               key={lang}
-              className="flex items-center gap-2.5 cursor-pointer group"
-              htmlFor={`lang-${lang}`}
-            >
-              <input
-                id={`lang-${lang}`}
-                type="checkbox"
-                checked={languages.includes(lang)}
-                onChange={() => toggleLanguage(lang)}
-                className="w-3.5 h-3.5 rounded border-[#30363d] bg-[#0d1117] accent-[#238636] cursor-pointer"
-              />
-              <span
-                className="text-sm text-[#8b949e] group-hover:text-[#f0f6fc] transition-colors duration-150"
-                style={{ fontFamily: "'DM Sans', sans-serif" }}
-              >
-                {lang}
-              </span>
-            </label>
+              onClick={() => toggleLanguage(lang)}
+              className={`
+                font-mono text-[10px] tracking-widest uppercase px-3 py-1.5 rounded-sm
+                border transition-all duration-150
+                ${languages.includes(lang) 
+                  ? 'bg-[var(--green)] border-[var(--green)] text-[#D1FAE5]' 
+                  : 'bg-transparent border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--border-hover)] hover:text-[var(--text)]'}
+              `}>
+              {lang}
+            </button>
           ))}
         </div>
       </div>
 
-      <div className="h-px bg-[#30363d]" />
+      <div className="h-px bg-[var(--border)]" />
 
       {/* Skill level */}
-      <div className="flex flex-col gap-3">
-        <p
-          className="text-xs font-semibold text-[#8b949e] uppercase tracking-wider"
-          style={{ fontFamily: "'Space Mono', monospace" }}
-        >
+      <div className="flex flex-col gap-2">
+        <p className="text-xs font-medium text-[var(--text-secondary)] mb-1">
           Skill Level
         </p>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1.5">
           {SKILL_LEVELS.map((level) => (
             <label
               key={level}
-              className="flex items-center gap-2.5 cursor-pointer group"
+              className="flex items-center gap-2 cursor-pointer group"
               htmlFor={`skill-${level}`}
             >
               <input
@@ -99,12 +82,11 @@ export default function FilterSidebar({ filters, onFilterChange }) {
                 value={level}
                 checked={skillLevel === level}
                 onChange={() => handleSkillLevel(level)}
-                className="w-3.5 h-3.5 border-[#30363d] bg-[#0d1117] accent-[#238636] cursor-pointer"
+                className="w-3.5 h-3.5 rounded-full border border-[var(--border)] bg-[var(--canvas)] appearance-none cursor-pointer flex items-center justify-center
+                  checked:border-[var(--text)] relative
+                  after:content-[''] after:hidden checked:after:block after:w-1.5 after:h-1.5 after:bg-[var(--text)] after:rounded-full"
               />
-              <span
-                className="text-sm text-[#8b949e] group-hover:text-[#f0f6fc] transition-colors duration-150"
-                style={{ fontFamily: "'DM Sans', sans-serif" }}
-              >
+              <span className="text-[14px] text-[var(--text)] transition-colors duration-150">
                 {level}
               </span>
             </label>
@@ -112,21 +94,15 @@ export default function FilterSidebar({ filters, onFilterChange }) {
         </div>
       </div>
 
-      <div className="h-px bg-[#30363d]" />
+      <div className="h-px bg-[var(--border)]" />
 
       {/* Min friendliness score */}
       <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <p
-            className="text-xs font-semibold text-[#8b949e] uppercase tracking-wider"
-            style={{ fontFamily: "'Space Mono', monospace" }}
-          >
+        <div className="flex items-center justify-between mb-2">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-[var(--text-secondary)]">
             Min Score
-          </p>
-          <span
-            className="text-xs font-bold text-[#238636]"
-            style={{ fontFamily: "'Space Mono', monospace" }}
-          >
+          </span>
+          <span className="font-mono text-[11px] font-bold text-[var(--text)]">
             {minScore}
           </span>
         </div>
@@ -138,32 +114,24 @@ export default function FilterSidebar({ filters, onFilterChange }) {
           step={5}
           value={minScore}
           onChange={handleScore}
-          className="w-full h-1 bg-[#30363d] rounded-full appearance-none cursor-pointer accent-[#238636]"
+          className="w-full h-1 bg-[var(--border)] rounded-full appearance-none cursor-pointer"
+          style={{ accentColor: 'var(--text)' }}
         />
-        <div className="flex justify-between text-[10px] text-[#8b949e]" style={{ fontFamily: "'Space Mono', monospace" }}>
+        <div className="flex justify-between text-[11px] text-[var(--text-muted)]">
           <span>0</span>
           <span>50</span>
           <span>100</span>
         </div>
       </div>
 
-      <div className="h-px bg-[#30363d]" />
+      <div className="h-px bg-[var(--border)] md:hidden" />
 
       {/* Actions */}
-      <div className="flex flex-col gap-2">
-        <button
-          id="filter-apply-btn"
-          onClick={handleApply}
-          className="w-full bg-[#238636] hover:bg-[#2ea043] text-white text-sm font-semibold rounded-md py-2 transition-all duration-200"
-          style={{ fontFamily: "'DM Sans', sans-serif" }}
-        >
-          Apply Filters
-        </button>
+      <div className="flex flex-col gap-1.5">
         <button
           id="filter-reset-btn"
           onClick={handleReset}
-          className="w-full text-sm text-[#8b949e] hover:text-[#f0f6fc] py-1.5 transition-colors duration-200"
-          style={{ fontFamily: "'DM Sans', sans-serif" }}
+          className="w-full text-[13px] text-[var(--text-secondary)] hover:text-[var(--text)] py-1.5 transition-colors duration-150 hover:bg-[var(--surface-elevated)] rounded-md focus:outline-none"
         >
           Reset
         </button>

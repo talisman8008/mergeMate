@@ -1,4 +1,5 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 
 const GitHubIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -6,83 +7,151 @@ const GitHubIcon = () => (
   </svg>
 )
 
-const navLinkClass = ({ isActive }) =>
-  `text-sm transition-all duration-200 ${
-    isActive
-      ? 'text-[#238636]'
-      : 'text-[#8b949e] hover:text-[#f0f6fc]'
-  }`
+const SunIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="5"></circle>
+    <line x1="12" y1="1" x2="12" y2="3"></line>
+    <line x1="12" y1="21" x2="12" y2="23"></line>
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+    <line x1="1" y1="12" x2="3" y2="12"></line>
+    <line x1="21" y1="12" x2="23" y2="12"></line>
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+  </svg>
+)
+
+const MoonIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+  </svg>
+)
 
 export default function Navbar({ user, signIn, signOut }) {
+  const [isDark, setIsDark] = useState(true)
+  const [scrolled, setScrolled] = useState(false)
+  const location = useLocation()
+  const isLanding = location.pathname === '/'
+
+  useEffect(() => {
+    const saved = localStorage.getItem('theme')
+    if (saved === 'light') {
+      document.documentElement.classList.add('light')
+      setIsDark(false)
+    } else {
+      document.documentElement.classList.remove('light')
+      setIsDark(true)
+    }
+
+    const handleScroll = () => {
+      if (location.pathname === '/') {
+        setScrolled(window.scrollY > window.innerHeight - 100)
+      } else {
+        setScrolled(window.scrollY > 50)
+      }
+    }
+    window.addEventListener('scroll', handleScroll)
+    // Run once to set initial state
+    handleScroll()
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [location.pathname])
+
+  const toggleTheme = () => {
+    if (isDark) {
+      document.documentElement.classList.add('light')
+      localStorage.setItem('theme', 'light')
+      setIsDark(false)
+    } else {
+      document.documentElement.classList.remove('light')
+      localStorage.setItem('theme', 'dark')
+      setIsDark(true)
+    }
+  }
+
+  const navClass = isLanding 
+    ? `fixed top-0 left-0 w-full z-50 transition-transform duration-300 ${scrolled ? 'translate-y-0 bg-[var(--landing-canvas)] border-b border-[var(--landing-border)]' : '-translate-y-full bg-transparent border-transparent'}`
+    : `sticky top-0 z-50 transition-all duration-300 ${scrolled ? 'bg-[var(--canvas)]/90 backdrop-blur-sm border-b border-[var(--border)]' : 'bg-transparent border-transparent'}`
+
+  const getNavLinkClass = ({ isActive }) => {
+    if (isLanding) {
+      return `text-[13px] transition-colors duration-150 px-2.5 py-1.5 rounded-md ${isActive ? 'font-bold text-[var(--landing-text)] bg-black/5' : 'font-medium text-[var(--landing-text-secondary)] hover:bg-black/5 hover:text-[var(--landing-text)]'}`
+    }
+    return `text-[13px] transition-colors duration-150 px-2.5 py-1.5 rounded-md ${isActive ? 'font-bold text-[var(--teal)] bg-[var(--surface-elevated)]' : 'font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-elevated)] hover:text-[var(--text)]'}`
+  }
+
   return (
-    <nav className="sticky top-0 z-50 bg-[#0a0a0a] border-b border-[#30363d]">
-      <div className="max-w-[1200px] mx-auto px-6 h-14 flex items-center justify-between gap-6">
+    <nav className={navClass}>
+      <div className="w-full mx-auto px-4 md:px-8 lg:px-12 xl:px-16 h-12 flex items-center justify-between gap-6">
 
         {/* Wordmark */}
         <NavLink
           to="/"
           id="nav-wordmark"
-          className="text-sm font-bold tracking-widest text-[#238636] flex-shrink-0"
-          style={{ fontFamily: "'Space Mono', monospace" }}
+          className="text-sm font-semibold flex-shrink-0"
+          style={{ color: 'var(--text)' }}
         >
-          FIRSTMERGE
+          FirstMerge
         </NavLink>
 
         {/* Nav links — only when logged in */}
         {user && (
-          <div className="flex items-center gap-6">
-            <NavLink to="/explore" id="nav-explore" className={navLinkClass} style={{ fontFamily: "'DM Sans', sans-serif" }}>
+          <div className="flex items-center gap-1.5">
+            <NavLink to="/explore" id="nav-explore" className={getNavLinkClass}>
               Explore
             </NavLink>
-            <NavLink to="/prcheck" id="nav-prcheck" className={navLinkClass} style={{ fontFamily: "'DM Sans', sans-serif" }}>
+            <NavLink to="/prcheck" id="nav-prcheck" className={getNavLinkClass}>
               PR Check
             </NavLink>
-            <NavLink to="/dashboard" id="nav-dashboard" className={navLinkClass} style={{ fontFamily: "'DM Sans', sans-serif" }}>
+            <NavLink to="/dashboard" id="nav-dashboard" className={getNavLinkClass}>
               Dashboard
             </NavLink>
           </div>
         )}
 
         {/* Right side */}
-        <div className="flex items-center gap-3 ml-auto">
+        <div className="flex items-center gap-2 ml-auto">
+          {/* Light/Dark Toggle */}
+          {!isLanding && (
+            <button
+              onClick={toggleTheme}
+              className="p-1.5 rounded-md transition-colors duration-150 text-[var(--text-secondary)] hover:text-[var(--text)] hover:bg-[var(--surface-elevated)]"
+              aria-label="Toggle theme"
+            >
+              {isDark ? <SunIcon /> : <MoonIcon />}
+            </button>
+          )}
+
           {user ? (
             <>
               {/* Avatar + username */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 ml-2">
                 {user.user_metadata?.avatar_url && (
                   <img
                     src={user.user_metadata.avatar_url}
                     alt={user.user_metadata.user_name ?? 'avatar'}
-                    className="w-7 h-7 rounded-full border border-[#30363d]"
+                    className="w-6 h-6 rounded border border-[var(--border)]"
                   />
                 )}
-                <span
-                  className="text-sm text-[#f0f6fc] hidden sm:inline"
-                  style={{ fontFamily: "'DM Sans', sans-serif" }}
-                >
-                  {user.user_metadata?.user_name ?? user.email}
-                </span>
               </div>
 
               {/* Sign out */}
               <button
                 id="navbar-signout-btn"
                 onClick={signOut}
-                className="text-xs text-[#8b949e] hover:text-[#f0f6fc] border border-[#30363d] rounded-md px-3 py-1.5 transition-all duration-200 hover:bg-[#161b22]"
-                style={{ fontFamily: "'DM Sans', sans-serif" }}
+                className={isLanding ? "text-[13px] font-medium text-[var(--landing-text-secondary)] hover:text-[var(--landing-text)] hover:bg-black/5 rounded-md px-2.5 py-1.5 transition-colors duration-150 ml-1" : "text-[13px] font-medium text-[var(--text-secondary)] hover:text-[var(--text)] hover:bg-[var(--surface-elevated)] rounded-md px-2.5 py-1.5 transition-colors duration-150 ml-1"}
               >
                 Sign out
               </button>
             </>
           ) : (
+            /* Login */
             <button
               id="navbar-login-btn"
               onClick={signIn}
-              className="inline-flex items-center gap-2 bg-[#238636] hover:bg-[#2ea043] text-white text-xs font-semibold rounded-md px-3 py-1.5 transition-all duration-200"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
+              className={`inline-flex items-center gap-2 text-[13px] font-medium rounded-md px-3 py-1.5 btn-scale focus:outline-none ml-2 ${isLanding ? 'bg-[var(--landing-text)] text-[var(--landing-canvas)]' : 'bg-[var(--teal)] text-black'}`}
             >
               <GitHubIcon />
-              Login with GitHub
+              Log in
             </button>
           )}
         </div>

@@ -16,7 +16,9 @@ async function directFetch(path) {
   const res = await fetch(url, { headers: directHeaders })
   if (!res.ok) {
     const text = await res.text().catch(() => '')
-    throw new Error(`GitHub ${res.status} ${res.statusText}: ${text.slice(0, 120)}`)
+    const err = new Error(`GitHub ${res.status} ${res.statusText}: ${text.slice(0, 120)}`)
+    err.status = res.status
+    throw err
   }
   return res.json()
 }
@@ -35,7 +37,7 @@ async function fetchContributing(owner, repo) {
     }
     return null
   } catch (err) {
-    if (err.message.includes('404')) return null
+    // CONTRIBUTING.md not found or other error — not critical
     return null
   }
 }
@@ -53,6 +55,7 @@ async function fetchRecentClosedPRs(owner, repo) {
 }
 
 export async function fetchPRData({ owner, repo, prNumber }) {
+  // These two calls are critical — let 404s propagate to the route handler
   const files = await directFetch(`/repos/${owner}/${repo}/pulls/${prNumber}/files`)
   const diff = Array.isArray(files)
     ? files.map((f) => f.patch || '').filter(Boolean).join('\n\n')
@@ -61,6 +64,7 @@ export async function fetchPRData({ owner, repo, prNumber }) {
   const prDetail = await directFetch(`/repos/${owner}/${repo}/pulls/${prNumber}`)
   const issueNumber = parseLinkedIssueNumber(prDetail?.body)
 
+  // Fall back to PR title / empty body when no linked issue is found
   let issueTitle = prDetail?.title || 'No linked issue found'
   let issueBody = prDetail?.body || ''
 
@@ -71,6 +75,7 @@ export async function fetchPRData({ owner, repo, prNumber }) {
       issueBody = issueData.body || ''
     } catch (err) {
       console.warn('[githubPRService] Could not fetch linked issue:', err.message)
+      // Keep PR title / body as fallback — don't crash
     }
   }
 
@@ -81,6 +86,7 @@ export async function fetchPRData({ owner, repo, prNumber }) {
 }
 
 export async function fetchIssueData({ owner, repo, issueNumber }) {
+  // Let 404s propagate to the route handler
   const issueData = await directFetch(`/repos/${owner}/${repo}/issues/${issueNumber}`)
   const issueTitle = issueData.title
   const issueBody = issueData.body || ''

@@ -7,6 +7,7 @@ import reposRouter from './routes/repos.js';
 import livenessRouter from './routes/liveness.js';
 import prcheckRouter from './routes/prcheck.js';
 import userRouter from './routes/user.js';
+import issueDetailsRouter from './routes/issueDetails.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -26,6 +27,7 @@ app.use('/api/repos', reposRouter);
 app.use('/api/liveness', livenessRouter);
 app.use('/api/prcheck', prcheckRouter);
 app.use('/api/user', userRouter);
+app.use('/api/issue-details', issueDetailsRouter);
 
 // ── 404 handler ───────────────────────────────────────────────────────────────
 app.use((_req, res) => {

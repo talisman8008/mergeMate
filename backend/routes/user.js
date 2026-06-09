@@ -216,4 +216,85 @@ router.post('/seed-demo', requireAuth, async (req, res) => {
   }
 })
 
+// ── POST /api/user/issues ────────────────────────────────────────────────────
+
+router.post('/issues', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.id
+    const { issue_title, repo_name, issue_url } = req.body
+
+    // Check if it already exists
+    const { data: existing, error: checkError } = await supabase
+      .from('saved_issues')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('issue_url', issue_url)
+      .maybeSingle()
+
+    if (checkError) {
+      console.error('[user] POST issue check failed:', checkError.message)
+      return res.status(500).json({ error: 'Failed to check existing issue' })
+    }
+
+    if (existing) {
+      return res.status(409).json({ error: 'Already saved' })
+    }
+
+    // Insert new issue
+    const { data, error } = await supabase
+      .from('saved_issues')
+      .insert({
+        user_id: userId,
+        issue_title,
+        repo_name,
+        issue_url,
+        status: 'saved',
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error('[user] POST issue failed:', error.message)
+      return res.status(500).json({ error: 'Failed to save issue' })
+    }
+
+    return res.status(201).json(data)
+  } catch (err) {
+    console.error('[user] POST /issues failed:', err.message)
+    return res.status(500).json({ error: err.message || 'Internal server error' })
+  }
+})
+
+// ── DELETE /api/user/clear-demo ──────────────────────────────────────────────
+
+router.delete('/clear-demo', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.id
+
+    const demoRepos = [
+      'facebook/react',
+      'tailwindlabs/tailwindcss',
+      'vitejs/vite',
+      'supabase/supabase',
+      'vercel/next.js'
+    ]
+
+    const { error } = await supabase
+      .from('saved_issues')
+      .delete()
+      .eq('user_id', userId)
+      .in('repo_name', demoRepos)
+
+    if (error) {
+      console.error('[user] Clear demo failed:', error.message)
+      return res.status(500).json({ error: 'Failed to clear demo data' })
+    }
+
+    return res.json({ message: 'Demo data cleared successfully' })
+  } catch (err) {
+    console.error('[user] DELETE /clear-demo failed:', err.message)
+    return res.status(500).json({ error: err.message || 'Internal server error' })
+  }
+})
+
 export default router

@@ -1,3 +1,94 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
 @import "tailwindcss";
+
+@theme {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-elevated: var(--surface-elevated);
+  --color-border-subtle: var(--border);
+  --color-border-hover: var(--border-hover);
+  
+  --color-text-primary: var(--text);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  
+  --color-accent-blue: var(--teal);
+  --color-accent-green: var(--green);
+  --color-accent-amber: var(--accent-amber);
+  --color-accent-red: var(--red);
+
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Space Grotesk', sans-serif;
+  --font-mono: 'Space Mono', monospace;
+}
+
+:root {
+  /* App dark theme (default) */
+  --canvas: #0C0A08;
+  --surface: #161410;
+  --surface-elevated: #1F1C18;
+  --border: #2A2520;
+  --text: #E8E0D4;
+  --text-secondary: #7A7068;
+  --green: #2D6A4F;
+  --red: #9B2226;
+  --teal: #0D9488;
+}
+
+html.light {
+  --canvas: #F5F2EB;
+  --surface: #EDEAE0;
+  --surface-elevated: #D9D4C7;
+  --border: #D4CFC4;
+  --text: #1A1814;
+  --text-secondary: #6B6560;
+  --green: #2D6A4F;
+  --red: #9B2226;
+  --teal: #0D9488;
+}
+
+.landing {
+  --landing-canvas: #F5F2EB;
+  --landing-surface: #EDEAE0;
+  --landing-border: #D4CFC4;
+  --landing-text: #1A1814;
+  --landing-text-secondary: #6B6560;
+  --landing-green: #2D6A4F;
+  --landing-red: #9B2226;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--canvas);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  /* Disable pull-to-refresh and horizontal scroll */
+  overscroll-behavior-y: none;
+  overflow-x: hidden;
+}
+
+@media (pointer: fine) {
+  body, a, button, input, select, textarea, [role="button"] {
+    cursor: none !important;
+  }
+}
+
+/* Base accessibility focus rings */
+*:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+/* Enforce flat design: remove all box shadows */
+* {
+  box-shadow: none !important;
+}
+
+/* Standardize scale transitions */
+.btn-scale {
+  transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1), background-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn-scale:active {
+  transform: scale(0.97);
+}
