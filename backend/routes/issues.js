@@ -12,7 +12,7 @@
 import { Router } from 'express'
 import { createClient } from '@supabase/supabase-js'
 
-import { searchIssues } from '../services/github.js'
+import { searchIssues, getRepoData } from '../services/github.js'
 import { computeFriendlinessScore } from '../services/friendlinessScore.js'
 import { checkIssueLiveness } from '../services/livenessCheck.js'
 
@@ -138,12 +138,15 @@ router.get('/', async (req, res) => {
           saveScore(repoFullName, scoreData.score, scoreData.breakdown)
         }
 
+        const repoData = await getRepoData(owner, repo)
+
         enriched.push({
           id:               issue.id,
           title:            issue.title,
           url:              issue.html_url,
           repo_name:        repoFullName,
-          language:         issue.language,
+          language:         issue.language || repoData.language,
+          stars:            repoData.stars,
           created_at:       issue.created_at,
           comments:         issue.comments,
           number:           issue.number,

@@ -13,7 +13,9 @@ export default function IssueRow({ issue }) {
     url,
     friendliness_score,
     open_pr_count,
-    number
+    number,
+    language,
+    stars
   } = issue ?? {}
 
   const [savingStatus, setSavingStatus] = useState('idle')
@@ -81,8 +83,22 @@ export default function IssueRow({ issue }) {
     >
       {/* Left Column */}
       <div className="flex-1 min-w-0 pr-6">
-        <div className="font-mono text-[11px] uppercase tracking-widest text-[#5C554D] mb-1.5 truncate">
-          {repo_name}
+        <div className="font-mono text-[11px] uppercase tracking-widest text-[#5C554D] mb-1.5 flex items-center gap-2 truncate">
+          <span>{repo_name}</span>
+          {language && (
+            <>
+              <span className="opacity-40">•</span>
+              <span>{language}</span>
+            </>
+          )}
+          {stars !== undefined && (
+            <>
+              <span className="opacity-40">•</span>
+              <span className="flex items-center gap-0.5">
+                {stars.toLocaleString()} <span className="text-[10px] pb-px">★</span>
+              </span>
+            </>
+          )}
         </div>
         <h3 className="font-display text-[16px] font-medium text-[var(--text)] leading-snug truncate md:whitespace-normal line-clamp-1 md:line-clamp-none">
           {title}

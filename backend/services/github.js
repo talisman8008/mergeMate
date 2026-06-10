@@ -142,15 +142,18 @@ export async function getIssueOpenPRs(owner, repo, issueNumber) {
 }
 
 /**
- * Get the primary language of a repository.
- * Never let API failure crash the response — returns null on any error.
+ * Get the repository data (language, stars).
+ * Never let API failure crash the response — returns default object on any error.
  */
-export async function getRepoLanguage(owner, repo) {
+export async function getRepoData(owner, repo) {
   try {
     const data = await ghFetch(`/repos/${owner}/${repo}`)
-    return data?.language ?? null
+    return {
+      language: data?.language ?? null,
+      stars: data?.stargazers_count ?? 0
+    }
   } catch (err) {
-    console.error(`[github.getRepoLanguage] ${owner}/${repo} failed:`, err.message)
-    return null
+    console.error(`[github.getRepoData] ${owner}/${repo} failed:`, err.message)
+    return { language: null, stars: 0 }
   }
 }
