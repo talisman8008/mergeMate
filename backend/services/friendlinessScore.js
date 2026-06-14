@@ -9,7 +9,15 @@
  *   4. PR collision count        — 0-35 pts  ⭐ highest weight
  */
 
-import { getRepoPRs, getRepoIssues } from './github.js'
+import { getRepoPRs, getRepoIssues, getRepoStats } from './github.js'
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY,
+)
+
+const CACHE_TTL_MS = 2 * 60 * 60 * 1000 // 2 hours
 
 // ── Signal 1: Maintainer response time ───────────────────────────────────────
 
@@ -110,29 +118,99 @@ function scoreCollisions(openPRCount) {
 
 // ── Main export ───────────────────────────────────────────────────────────────
 
-/**
- * Compute full friendliness score for a repo + issue combination.
- * Never let API failure crash the response — partial data always beats no data.
- *
- * @param {string} owner           - GitHub repo owner
- * @param {string} repo            - GitHub repo name
- * @param {string} issueCreatedAt  - ISO timestamp of the issue
- * @param {number} openPRCount     - pre-fetched open PR count for this issue
- * @returns {Promise<{ score: number, breakdown: object, fallbacks_used: string[] }>}
- */
-export async function computeFriendlinessScore(owner, repo, issueCreatedAt, openPRCount) {
-  // Fetch both data sources concurrently — each returns [] on failure (never throws)
-  const [closedIssues, closedPRs] = await Promise.all([
-    getRepoIssues(owner, repo, 20),
-    getRepoPRs(owner, repo, 'closed', 50),
-  ])
+export async function computeFriendlinessScore(owner, repo, issueCreatedAt, openPRCount, prefetchedClosedIssues = null, prefetchedClosedPRs = null, repoStats = null) {
+  const repoFullName = `${owner}/${repo}`
+
+  // 1. Try cache
+  try {
+    const { data } = await supabase
+      .from('repo_scores')
+      .select('friendliness_score, response_time_hrs, beginner_merge_rate, last_updated')
+      .eq('repo_full_name', repoFullName)
+      .single()
+
+    if (data?.last_updated) {
+      const ageMs = Date.now() - new Date(data.last_updated).getTime()
+      if (ageMs < CACHE_TTL_MS) {
+        console.log(`[cache] HIT for repo: ${repoFullName}`)
+        return {
+          score: data.friendliness_score,
+          breakdown: {
+            response_time_hrs: data.response_time_hrs,
+            beginner_merge_rate: data.beginner_merge_rate,
+          },
+          fallbacks_used: [],
+          cached: true,
+          cached_at: data.last_updated,
+        }
+      }
+    }
+  } catch (_err) {
+    // Cache read failure is non-fatal
+  }
+
+  console.log(`[cache] MISS for repo: ${repoFullName}`)
+
+  let closedIssues = prefetchedClosedIssues
+  let closedPRs = prefetchedClosedPRs
+
+  if (!closedIssues || !closedPRs) {
+    const results = await Promise.all([
+      getRepoIssues(owner, repo, 20),
+      getRepoPRs(owner, repo, 50),
+    ])
+    closedIssues = results[0]
+    closedPRs = results[1]
+  }
 
   const { pts: responseTimePts, avgHrs,    fallback: rt_fallback } = scoreResponseTime(closedIssues)
   const { pts: mergeRatePts,    mergeRate, fallback: mr_fallback } = scoreMergeRate(closedPRs)
   const { pts: freshnessPts,               fallback: fr_fallback } = scoreFreshness(issueCreatedAt)
   const { pts: collisionPts }                                       = scoreCollisions(openPRCount)
 
-  const score = responseTimePts + mergeRatePts + freshnessPts + collisionPts
+  const scoreValue = responseTimePts + mergeRatePts + freshnessPts + collisionPts
+  let finalScore = Math.min(100, Math.max(0, scoreValue))
+
+  let stats = repoStats
+  if (!stats) {
+    stats = await getRepoStats(owner, repo)
+  }
+
+  if (stats) {
+    if (stats.openIssuesCount > 500) {
+      finalScore = Math.max(0, finalScore - 15)
+    }
+    if (stats.stars < 10) {
+      finalScore = Math.min(finalScore, 30)
+    } else if (stats.stars < 50) {
+      finalScore = Math.max(0, finalScore - 10)
+    }
+    if (stats.pushedAt) {
+      const daysSinceCommit = (Date.now() - new Date(stats.pushedAt)) / 86_400_000
+      if (daysSinceCommit > 180) {
+        finalScore = Math.min(finalScore, 20)
+      }
+    }
+  }
+
+  if (closedPRs && closedPRs.length > 0) {
+    const ninetyDaysAgo = Date.now() - 90 * 86_400_000
+    const hasRecentMergedPR = closedPRs.some(pr => pr.merged_at && new Date(pr.merged_at).getTime() > ninetyDaysAgo)
+    if (!hasRecentMergedPR) {
+      finalScore = Math.min(finalScore, 40)
+    }
+  } else if (!closedPRs || closedPRs.length === 0) {
+    finalScore = Math.min(finalScore, 40)
+  }
+
+  const breakdown = {
+    response_time_pts:   responseTimePts,
+    merge_rate_pts:      mergeRatePts,
+    freshness_pts:       freshnessPts,
+    collision_pts:       collisionPts,
+    response_time_hrs:   avgHrs,
+    beginner_merge_rate: mergeRate,
+  }
 
   // Track which signals fell back so callers can surface this in API responses
   const fallbacks_used = []
@@ -140,16 +218,30 @@ export async function computeFriendlinessScore(owner, repo, issueCreatedAt, open
   if (mr_fallback) fallbacks_used.push('merge_rate')
   if (fr_fallback) fallbacks_used.push('freshness')
 
+  const now = new Date().toISOString()
+
+  // 2. Persist to cache (fire-and-forget)
+  supabase
+    .from('repo_scores')
+    .upsert(
+      {
+        repo_full_name:      repoFullName,
+        friendliness_score:  finalScore,
+        response_time_hrs:   avgHrs ?? null,
+        beginner_merge_rate: mergeRate ?? null,
+        last_updated:        now,
+      },
+      { onConflict: 'repo_full_name' },
+    )
+    .then(({ error }) => {
+      if (error) console.warn('[friendlinessScore] cache write failed:', error.message)
+    })
+
   return {
-    score: Math.min(100, Math.max(0, score)),
-    breakdown: {
-      response_time_pts:   responseTimePts,
-      merge_rate_pts:      mergeRatePts,
-      freshness_pts:       freshnessPts,
-      collision_pts:       collisionPts,
-      response_time_hrs:   avgHrs,
-      beginner_merge_rate: mergeRate,
-    },
+    score: finalScore,
+    breakdown,
     fallbacks_used,
+    cached: false,
+    cached_at: now,
   }
 }
