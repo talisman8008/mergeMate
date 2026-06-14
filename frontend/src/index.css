@@ -1,98 +1,90 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Space+Grotesk:wght@400;500;700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
 @import "tailwindcss";
 
 @theme {
-  --color-canvas: var(--canvas);
-  --color-surface: var(--surface);
-  --color-elevated: var(--surface-elevated);
-  --color-border-subtle: var(--border);
-  --color-border-hover: var(--border-hover);
-
-  --color-text-primary: var(--text);
-  --color-text-secondary: var(--text-secondary);
-  --color-text-muted: var(--text-muted);
-
-  --color-accent-blue: var(--teal);
-  --color-accent-green: var(--green);
-  --color-accent-amber: var(--accent-amber);
-  --color-accent-red: var(--red);
-
-  --color-dashboard-bg: #fffbf4;
-  --color-dashboard-nav: #EDEAE0;
-  --color-dashboard-text: #000000;
-  --color-dashboard-muted: #484848;
-
-  --font-display: 'Space Grotesk', sans-serif;
-  --font-body: 'Space Grotesk', sans-serif;
+  --font-display: 'DM Sans', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-sans: 'DM Sans', sans-serif;
   --font-mono: 'Space Mono', monospace;
 }
 
 :root {
-  /* App dark theme (default) */
-  --canvas: #0C0A08;
-  --surface: #161410;
-  --surface-elevated: #1F1C18;
-  --border: #2A2520;
-  --text: #E8E0D4;
-  --text-secondary: #7A7068;
-  --green: #2D6A4F;
-  --red: #9B2226;
-  --teal: #0D9488;
+  --bg-primary: #0a0a0f;
+  --bg-card: #111118;
+  --bg-card-hover: #16161f;
+  --border: #1e1e2e;
+  --border-hover: #2d2d3f;
+  --text-primary: #e2e8f0;
+  --text-muted: #64748b;
+  --text-faint: #374151;
+  --bg-selected: rgba(255,255,255,0.08);
+  --border-selected: rgba(255,255,255,0.2);
+  
+  /* Section accents */
+  --accent-green: #22c55e;
+  --accent-green-dim: #166534;
+  --accent-blue: #3b82f6;
+  --accent-blue-dim: #1e3a5f;
+  --accent-orange: #f97316;
+  --accent-orange-dim: #7c2d12;
+  --accent-purple: #8b5cf6;
+  --accent-purple-dim: #4c1d95;
+  --accent-amber: #f59e0b;
+  --accent-amber-dim: #78350f;
+  --accent-red: #ef4444;
+  --accent-red-dim: #7f1d1d;
+  
+  /* Language badges */
+  --lang-javascript: #f7df1e;
+  --lang-typescript: #3178c6;
+  --lang-python: #3776ab;
+  --lang-go: #00add8;
+  --lang-rust: #ce422b;
 }
 
-html.light {
-  --canvas: #F5F2EB;
-  --surface: #EDEAE0;
-  --surface-elevated: #D9D4C7;
-  --border: #D4CFC4;
-  --text: #1A1814;
-  --text-secondary: #6B6560;
-  --green: #2D6A4F;
-  --red: #9B2226;
-  --teal: #0D9488;
-}
-
-html.light .issue-tile {
-  border: 1px solid #000 !important;
-}
-
-.landing {
-  --landing-canvas: #F5F2EB;
-  --landing-surface: #EDEAE0;
-  --landing-border: #D4CFC4;
-  --landing-text: #1A1814;
-  --landing-text-secondary: #6B6560;
-  --landing-green: #2D6A4F;
-  --landing-red: #9B2226;
+.light {
+  --bg-primary: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f1f5f9;
+  --border: #e2e8f0;
+  --border-hover: #cbd5e1;
+  --text-primary: #0f172a;
+  --text-muted: #475569;
+  --text-faint: #94a3b8;
+  --bg-selected: #e2e2e2;
+  --border-selected: #cbd5e1;
+  
+  /* Section accents */
+  --accent-green: #22c55e;
+  --accent-green-dim: #dcfce7;
+  --accent-blue: #3b82f6;
+  --accent-blue-dim: #dbeafe;
+  --accent-orange: #f97316;
+  --accent-orange-dim: #ffedd5;
+  --accent-purple: #8b5cf6;
+  --accent-purple-dim: #ede9fe;
+  --accent-amber: #f59e0b;
+  --accent-amber-dim: #fef3c7;
+  --accent-red: #ef4444;
+  --accent-red-dim: #fee2e2;
 }
 
 body {
   font-family: var(--font-body);
-  background-color: var(--canvas);
-  color: var(--text);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   /* Disable pull-to-refresh and horizontal scroll */
   overscroll-behavior-y: none;
   overflow-x: hidden;
 }
 
-@media (pointer: fine) {
 
-  body,
-  a,
-  button,
-  input,
-  select,
-  textarea,
-  [role="button"] {
-    cursor: none !important;
-  }
-}
 
 /* Base accessibility focus rings */
 *:focus-visible {
-  outline: 2px solid var(--teal);
+  outline: 2px solid var(--accent-blue);
   outline-offset: 2px;
 }
 
