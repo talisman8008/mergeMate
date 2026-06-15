@@ -50,14 +50,14 @@ const SignalRow = ({ name, percent, score, color, delay }) => {
   const [ref, isVisible] = useIntersectionObserver()
   return (
     <div ref={ref} className="flex items-center gap-6 mb-5" style={{ transition: `opacity 500ms ease-out ${delay}ms, transform 500ms ease-out ${delay}ms`, opacity: isVisible ? 1 : 0, transform: isVisible ? 'translateY(0)' : 'translateY(24px)' }}>
-      <div className="w-[280px] font-mono text-[14px] text-[var(--landing-text)] whitespace-nowrap">{name}</div>
-      <div className="flex-1 h-[2px] bg-[var(--landing-border)] relative overflow-hidden rounded-full">
+      <div className="w-[280px] font-mono text-[14px] text-[var(--text-primary)] whitespace-nowrap">{name}</div>
+      <div className="flex-1 h-[2px] bg-[var(--border)] relative overflow-hidden rounded-full">
         <div 
           className="absolute top-0 left-0 h-full transition-all duration-1000 ease-out"
           style={{ width: isVisible ? `${percent}%` : '0%', backgroundColor: `var(${color})`, transitionDelay: `${delay + 200}ms` }}
         />
       </div>
-      <div className="w-[40px] text-right font-mono text-[14px] text-[var(--landing-text)]">{score}</div>
+      <div className="w-[40px] text-right font-mono text-[14px] text-[var(--text-primary)]">{score}</div>
     </div>
   )
 }
@@ -81,9 +81,9 @@ const Heatmap = () => {
   return (
     <div className="w-full flex flex-col gap-4">
       {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between text-[13px] text-[var(--landing-text-secondary)]">
+      <div className="flex flex-col md:flex-row md:items-center justify-between text-[13px] text-[var(--text-muted)]">
         <div className="flex items-center gap-2">
-          <span><span className="font-bold text-[var(--landing-text)]">100</span> submissions in the past one year</span>
+          <span><span className="font-bold text-[var(--text-primary)]">100</span> submissions in the past one year</span>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-50">
             <circle cx="12" cy="12" r="10" />
             <path d="M12 16v-4" />
@@ -91,9 +91,9 @@ const Heatmap = () => {
           </svg>
         </div>
         <div className="flex items-center gap-4 mt-2 md:mt-0">
-          <div>Total active days: <span className="font-bold text-[var(--landing-text)]">36</span></div>
-          <div>Max streak: <span className="font-bold text-[var(--landing-text)]">10</span></div>
-          <div className="bg-[var(--landing-surface)] px-3 py-1 rounded-md border border-[var(--landing-border)] flex items-center gap-2 text-[var(--landing-text)] ml-2 cursor-pointer">
+          <div>Total active days: <span className="font-bold text-[var(--text-primary)]">36</span></div>
+          <div>Max streak: <span className="font-bold text-[var(--text-primary)]">10</span></div>
+          <div className="bg-[var(--bg-card)] px-3 py-1 rounded-md border border-[var(--border)] flex items-center gap-2 text-[var(--text-primary)] ml-2 cursor-pointer">
             Current
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M6 9l6 6 6-6"/>
@@ -113,7 +113,7 @@ const Heatmap = () => {
                   key={c} 
                   className="flex-1 aspect-square rounded-[2px]" 
                   style={{ 
-                    backgroundColor: opacity > 0 ? `color-mix(in srgb, var(--landing-green) ${opacity * 100}%, transparent)` : 'var(--landing-border)' 
+                    backgroundColor: opacity > 0 ? `color-mix(in srgb, var(--accent-green) ${opacity * 100}%, transparent)` : 'var(--border)' 
                   }} 
                 />
               )
@@ -123,7 +123,7 @@ const Heatmap = () => {
       </div>
 
       {/* Months */}
-      <div className="flex justify-between text-[12px] text-[var(--landing-text-secondary)] px-1">
+      <div className="flex justify-between text-[12px] text-[var(--text-muted)] px-1">
         {months.map((m, i) => (
           <div key={i}>{m}</div>
         ))}
@@ -136,7 +136,7 @@ export default function Home({ user, signIn, signOut }) {
   const navigate = useNavigate()
 
   return (
-    <div className="landing min-h-screen flex flex-col bg-[var(--landing-canvas)] text-[var(--landing-text)] font-body">
+    <div className="landing min-h-screen flex flex-col bg-[var(--bg-primary)] text-[var(--text-primary)] font-body">
       <Navbar user={user} signIn={signIn} signOut={signOut} />
 
       <main className="flex-1 flex flex-col w-full">
@@ -144,12 +144,12 @@ export default function Home({ user, signIn, signOut }) {
         {/* SECTION 1 */}
         <section className="h-[100vh] w-full flex flex-col items-center justify-center px-6">
           <FadeIn delay={0}>
-            <h1 className="text-[48px] md:text-[80px] font-display font-bold leading-[0.9] tracking-[-2px] text-center text-[var(--landing-text)] max-w-[800px]">
+            <h1 className="text-[48px] md:text-[80px] font-display font-bold leading-[0.9] tracking-[-2px] text-center text-[var(--text-primary)] max-w-[800px]">
               You've been contributing<br/>to open source wrong.
             </h1>
           </FadeIn>
           <FadeIn delay={100} className="mt-[40px]">
-            <p className="font-mono text-[13px] text-[var(--landing-text-secondary)] uppercase tracking-widest text-center">
+            <p className="font-mono text-[13px] text-[var(--text-muted)] uppercase tracking-widest text-center">
               SCROLL TO FIND OUT WHY
             </p>
           </FadeIn>
@@ -159,41 +159,41 @@ export default function Home({ user, signIn, signOut }) {
         <section className="w-full max-w-[1200px] mx-auto px-6 py-[120px] flex flex-col md:flex-row items-center gap-16">
           <div className="flex-1">
             <FadeIn delay={0}>
-              <p className="font-mono text-[13px] text-[var(--landing-text-secondary)] uppercase tracking-wider mb-4">THE PROBLEM</p>
+              <p className="font-mono text-[13px] text-[var(--text-muted)] uppercase tracking-wider mb-4">THE PROBLEM</p>
             </FadeIn>
             <FadeIn delay={100}>
-              <h2 className="font-display text-[48px] font-bold text-[var(--landing-text)] leading-[1.1] mb-6">
+              <h2 className="font-display text-[48px] font-bold text-[var(--text-primary)] leading-[1.1] mb-6">
                 This is what goodfirstissue.dev showed you.
               </h2>
             </FadeIn>
             <FadeIn delay={200}>
-              <p className="font-display text-[18px] text-[var(--landing-text-secondary)]">
+              <p className="font-display text-[18px] text-[var(--text-muted)]">
                 A label. No data. No context. Just hope.
               </p>
             </FadeIn>
           </div>
           <div className="w-full md:w-[45%]">
             <FadeIn delay={300}>
-              <div className="bg-[var(--landing-surface)] border border-[var(--landing-border)] rounded-[8px] p-8 w-full max-w-[420px] mx-auto shadow-none">
-                <p className="font-mono text-[13px] text-[var(--landing-text-secondary)] mb-2">random-user/abandoned-project</p>
-                <h3 className="font-display text-[18px] font-bold text-[var(--landing-text)] mb-6">Fix typo in README.md</h3>
+              <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-[8px] p-8 w-full max-w-[420px] mx-auto shadow-none">
+                <p className="font-mono text-[13px] text-[var(--text-muted)] mb-2">random-user/abandoned-project</p>
+                <h3 className="font-display text-[18px] font-bold text-[var(--text-primary)] mb-6">Fix typo in README.md</h3>
                 
                 <div className="flex items-center gap-4 mb-8">
                   <svg width="48" height="48" viewBox="0 0 48 48">
-                    <circle cx="24" cy="24" r="20" fill="none" stroke="var(--landing-border)" strokeWidth="4" />
-                    <circle cx="24" cy="24" r="20" fill="none" stroke="var(--landing-red)" strokeWidth="4" strokeDasharray="125.6" strokeDashoffset="110" strokeLinecap="round" transform="rotate(-90 24 24)" />
-                    <text x="24" y="29" textAnchor="middle" className="font-mono font-bold text-[14px]" fill="var(--landing-red)">12</text>
+                    <circle cx="24" cy="24" r="20" fill="none" stroke="var(--border)" strokeWidth="4" />
+                    <circle cx="24" cy="24" r="20" fill="none" stroke="var(--accent-red)" strokeWidth="4" strokeDasharray="125.6" strokeDashoffset="110" strokeLinecap="round" transform="rotate(-90 24 24)" />
+                    <text x="24" y="29" textAnchor="middle" className="font-mono font-bold text-[14px]" fill="var(--accent-red)">12</text>
                   </svg>
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <div className="inline-flex max-w-fit px-3 py-1.5 rounded-full bg-[color-mix(in_srgb,var(--landing-red)_15%,transparent)] text-[var(--landing-red)] font-mono text-[12px] font-bold tracking-wider uppercase items-center gap-2">
+                  <div className="inline-flex max-w-fit px-3 py-1.5 rounded-full bg-[color-mix(in_srgb,var(--accent-red)_15%,transparent)] text-[var(--accent-red)] font-mono text-[12px] font-bold tracking-wider uppercase items-center gap-2">
                     <span>✗</span> Last activity: 8 months ago
                   </div>
-                  <div className="inline-flex max-w-fit px-3 py-1.5 rounded-full bg-[color-mix(in_srgb,var(--landing-red)_15%,transparent)] text-[var(--landing-red)] font-mono text-[12px] font-bold tracking-wider uppercase items-center gap-2">
+                  <div className="inline-flex max-w-fit px-3 py-1.5 rounded-full bg-[color-mix(in_srgb,var(--accent-red)_15%,transparent)] text-[var(--accent-red)] font-mono text-[12px] font-bold tracking-wider uppercase items-center gap-2">
                     <span>✗</span> 11 open PRs already
                   </div>
-                  <div className="inline-flex max-w-fit px-3 py-1.5 rounded-full bg-[color-mix(in_srgb,var(--landing-red)_15%,transparent)] text-[var(--landing-red)] font-mono text-[12px] font-bold tracking-wider uppercase items-center gap-2">
+                  <div className="inline-flex max-w-fit px-3 py-1.5 rounded-full bg-[color-mix(in_srgb,var(--accent-red)_15%,transparent)] text-[var(--accent-red)] font-mono text-[12px] font-bold tracking-wider uppercase items-center gap-2">
                     <span>✗</span> Maintainer response: never
                   </div>
                 </div>
@@ -203,13 +203,13 @@ export default function Home({ user, signIn, signOut }) {
         </section>
 
         {/* SECTION 3 */}
-        <section className="w-full bg-[var(--landing-surface)]">
+        <section className="w-full bg-[var(--bg-card)]">
           <div className="max-w-[1200px] mx-auto px-6 py-[120px]">
             <FadeIn delay={0}>
-              <p className="font-mono text-[13px] text-[var(--landing-text-secondary)] uppercase tracking-wider mb-4">THE SOLUTION</p>
+              <p className="font-mono text-[13px] text-[var(--text-muted)] uppercase tracking-wider mb-4">THE SOLUTION</p>
             </FadeIn>
             <FadeIn delay={100}>
-              <h2 className="font-display text-[48px] font-bold text-[var(--landing-text)] leading-[1.1] mb-16 max-w-[800px]">
+              <h2 className="font-display text-[48px] font-bold text-[var(--text-primary)] leading-[1.1] mb-16 max-w-[800px]">
                 We computed what they never showed you.
               </h2>
             </FadeIn>
@@ -221,7 +221,7 @@ export default function Home({ user, signIn, signOut }) {
               <SignalRow name="PR COLLISION COUNT" percent={100} score="100" color="--landing-green" delay={500} />
               
               <FadeIn delay={700} className="mt-10">
-                <div className="font-display text-[24px] font-bold text-[var(--landing-green)]">
+                <div className="font-display text-[24px] font-bold text-[var(--accent-green)]">
                   = Friendliness Score: 87
                 </div>
               </FadeIn>
@@ -233,36 +233,36 @@ export default function Home({ user, signIn, signOut }) {
         <section className="w-full max-w-[1200px] mx-auto px-6 py-[120px] flex flex-col md:flex-row items-center gap-16">
           <div className="flex-1">
             <FadeIn delay={0}>
-              <p className="font-mono text-[13px] text-[var(--landing-text-secondary)] uppercase tracking-wider mb-4">PR QUALITY CHECK</p>
+              <p className="font-mono text-[13px] text-[var(--text-muted)] uppercase tracking-wider mb-4">PR QUALITY CHECK</p>
             </FadeIn>
             <FadeIn delay={100}>
-              <h2 className="font-display text-[48px] font-bold text-[var(--landing-text)] leading-[1.1] mb-6">
+              <h2 className="font-display text-[48px] font-bold text-[var(--text-primary)] leading-[1.1] mb-6">
                 Know before you submit.
               </h2>
             </FadeIn>
             <FadeIn delay={200}>
-              <p className="font-display text-[18px] text-[var(--landing-text-secondary)] max-w-[480px]">
+              <p className="font-display text-[18px] text-[var(--text-muted)] max-w-[480px]">
                 Paste your PR URL. AI fetches the diff, reads the issue, checks the CONTRIBUTING.md, and tells you the truth.
               </p>
             </FadeIn>
           </div>
           <div className="w-full md:w-[45%]">
             <FadeIn delay={300}>
-              <div className="bg-[var(--landing-surface)] border-[2px] border-[var(--landing-green)] rounded-[8px] p-8 w-full max-w-[420px] mx-auto shadow-none">
-                <p className="font-mono text-[13px] text-[var(--landing-text-secondary)] uppercase tracking-widest mb-1">VERDICT</p>
-                <div className="font-display text-[64px] font-bold text-[var(--landing-green)] leading-none tracking-tight mb-8">
+              <div className="bg-[var(--bg-card)] border-[2px] border-[var(--accent-green)] rounded-[8px] p-8 w-full max-w-[420px] mx-auto shadow-none">
+                <p className="font-mono text-[13px] text-[var(--text-muted)] uppercase tracking-widest mb-1">VERDICT</p>
+                <div className="font-display text-[64px] font-bold text-[var(--accent-green)] leading-none tracking-tight mb-8">
                   GENUINE
                 </div>
                 
-                <div className="h-[1px] w-full bg-[var(--landing-border)] mb-6" />
+                <div className="h-[1px] w-full bg-[var(--border)] mb-6" />
                 
-                <p className="font-mono text-[13px] text-[var(--landing-text-secondary)] uppercase tracking-widest mb-2">REASON</p>
-                <p className="font-display text-[16px] text-[var(--landing-text)] leading-relaxed">
+                <p className="font-mono text-[13px] text-[var(--text-muted)] uppercase tracking-widest mb-2">REASON</p>
+                <p className="font-display text-[16px] text-[var(--text-primary)] leading-relaxed">
                   The PR correctly implements error handling for the null case described in the issue.
                 </p>
                 
-                <p className="font-mono text-[13px] text-[var(--landing-text-secondary)] uppercase tracking-widest mt-6 mb-2">SUGGESTION</p>
-                <p className="font-display text-[16px] text-[var(--landing-text)] leading-relaxed">
+                <p className="font-mono text-[13px] text-[var(--text-muted)] uppercase tracking-widest mt-6 mb-2">SUGGESTION</p>
+                <p className="font-display text-[16px] text-[var(--text-primary)] leading-relaxed">
                   Add a unit test for the edge case before submitting.
                 </p>
               </div>
@@ -271,19 +271,19 @@ export default function Home({ user, signIn, signOut }) {
         </section>
 
         {/* SECTION 5 */}
-        <section className="w-full bg-[var(--landing-surface)]">
+        <section className="w-full bg-[var(--bg-card)]">
           <div className="max-w-[1200px] mx-auto px-6 py-[120px]">
             <FadeIn delay={0}>
-              <p className="font-mono text-[13px] text-[var(--landing-text-secondary)] uppercase tracking-wider mb-4">CONTRIBUTION RECORD</p>
+              <p className="font-mono text-[13px] text-[var(--text-muted)] uppercase tracking-wider mb-4">CONTRIBUTION RECORD</p>
             </FadeIn>
             <FadeIn delay={100}>
-              <h2 className="font-display text-[48px] font-bold text-[var(--landing-text)] leading-[1.1] mb-16">
+              <h2 className="font-display text-[48px] font-bold text-[var(--text-primary)] leading-[1.1] mb-16">
                 Every merged PR. Tracked.
               </h2>
             </FadeIn>
             
             <FadeIn delay={200}>
-              <div className="bg-[var(--landing-canvas)] border border-[var(--landing-border)] rounded-xl p-8 max-w-[950px] mx-auto mb-6 shadow-none overflow-x-auto">
+              <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-xl p-8 max-w-[950px] mx-auto mb-6 shadow-none overflow-x-auto">
                 <Heatmap />
               </div>
             </FadeIn>
@@ -291,16 +291,16 @@ export default function Home({ user, signIn, signOut }) {
             <FadeIn delay={300}>
               <div className="flex flex-wrap gap-8 items-center max-w-[950px] mx-auto px-8">
                 <div className="flex flex-col items-center gap-3">
-                  <div className="w-10 h-10 rounded-full border-2 border-[var(--landing-green)] flex items-center justify-center text-base bg-[color-mix(in_srgb,var(--landing-green)_10%,transparent)]">🥉</div>
-                  <div className="font-mono text-[12px] font-bold text-[var(--landing-text)] tracking-wider">7-DAY STREAK</div>
+                  <div className="w-10 h-10 rounded-full border-2 border-[var(--accent-green)] flex items-center justify-center text-base bg-[color-mix(in_srgb,var(--accent-green)_10%,transparent)]">🥉</div>
+                  <div className="font-mono text-[12px] font-bold text-[var(--text-primary)] tracking-wider">7-DAY STREAK</div>
                 </div>
                 <div className="flex flex-col items-center gap-3 opacity-50">
-                  <div className="w-10 h-10 rounded-full border-2 border-[var(--landing-border)] flex items-center justify-center text-base grayscale">🥈</div>
-                  <div className="font-mono text-[12px] font-bold text-[var(--landing-text-secondary)] tracking-wider">21-DAY STREAK</div>
+                  <div className="w-10 h-10 rounded-full border-2 border-[var(--border)] flex items-center justify-center text-base grayscale">🥈</div>
+                  <div className="font-mono text-[12px] font-bold text-[var(--text-muted)] tracking-wider">21-DAY STREAK</div>
                 </div>
                 <div className="flex flex-col items-center gap-3 opacity-50">
-                  <div className="w-10 h-10 rounded-full border-2 border-[var(--landing-border)] flex items-center justify-center text-base grayscale">🥇</div>
-                  <div className="font-mono text-[12px] font-bold text-[var(--landing-text-secondary)] tracking-wider">50-DAY STREAK</div>
+                  <div className="w-10 h-10 rounded-full border-2 border-[var(--border)] flex items-center justify-center text-base grayscale">🥇</div>
+                  <div className="font-mono text-[12px] font-bold text-[var(--text-muted)] tracking-wider">50-DAY STREAK</div>
                 </div>
               </div>
             </FadeIn>
@@ -310,12 +310,12 @@ export default function Home({ user, signIn, signOut }) {
         {/* SECTION 6 */}
         <section className="h-[100vh] w-full flex flex-col items-center justify-center px-6">
           <FadeIn delay={0}>
-            <h2 className="text-[64px] font-display font-bold leading-[1.1] text-center text-[var(--landing-text)] mb-4">
+            <h2 className="text-[64px] font-display font-bold leading-[1.1] text-center text-[var(--text-primary)] mb-4">
               Start contributing right.
             </h2>
           </FadeIn>
           <FadeIn delay={100}>
-            <p className="font-display text-[20px] text-[var(--landing-text-secondary)] text-center mb-10">
+            <p className="font-display text-[20px] text-[var(--text-muted)] text-center mb-10">
               Free. Works with any public GitHub repo.
             </p>
           </FadeIn>
@@ -323,14 +323,14 @@ export default function Home({ user, signIn, signOut }) {
             {user ? (
               <button
                 onClick={() => navigate('/dashboard')}
-                className="bg-[var(--landing-text)] text-[var(--landing-canvas)] font-display text-[16px] px-8 py-4 rounded-[6px] transition-transform hover:scale-95 flex items-center gap-3 font-medium"
+                className="bg-[var(--accent-green)] text-[var(--bg-primary)] font-display text-[16px] px-8 py-4 rounded-[6px] transition-transform hover:scale-95 flex items-center gap-3 font-medium"
               >
                 Go to Dashboard
               </button>
             ) : (
               <button
                 onClick={signIn}
-                className="bg-[var(--landing-text)] text-[var(--landing-canvas)] font-display text-[16px] px-8 py-4 rounded-[6px] transition-transform hover:scale-95 flex items-center gap-3 font-medium"
+                className="bg-[var(--accent-green)] text-[var(--bg-primary)] font-display text-[16px] px-8 py-4 rounded-[6px] transition-transform hover:scale-95 flex items-center gap-3 font-medium"
               >
                 <GitHubIcon />
                 Continue with GitHub
@@ -338,7 +338,7 @@ export default function Home({ user, signIn, signOut }) {
             )}
           </FadeIn>
           <FadeIn delay={300} className="mt-6">
-            <p className="font-mono text-[12px] text-[var(--landing-text-secondary)] uppercase tracking-widest text-center">
+            <p className="font-mono text-[12px] text-[var(--text-muted)] uppercase tracking-widest text-center">
               NO CREDIT CARD. NO SETUP. JUST GITHUB OAUTH.
             </p>
           </FadeIn>

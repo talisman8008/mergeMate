@@ -29,16 +29,7 @@ const ERROR_RESULT = { openPRCount: 0, status: 'fresh', cached: false, error: tr
 
 // ── Main export ───────────────────────────────────────────────────────────────
 
-/**
- * Check how contested a specific issue is by counting open PRs targeting it.
- * Never let API failure crash the response — returns ERROR_RESULT on any failure.
- *
- * @param {string} owner
- * @param {string} repo
- * @param {number} issueNumber
- * @returns {Promise<{ openPRCount: number, status: string, cached: boolean, error?: boolean }>}
- */
-export async function checkIssueLiveness(owner, repo, issueNumber) {
+export async function checkIssueLiveness(owner, repo, issueNumber, preFetchedOpenPRCount = null) {
   try {
     const cacheKey    = `${owner}/${repo}#${issueNumber}`
     const repoFullName = `${owner}/${repo}`
@@ -54,10 +45,12 @@ export async function checkIssueLiveness(owner, repo, issueNumber) {
       if (data?.cached_at) {
         const ageMs = Date.now() - new Date(data.cached_at).getTime()
         if (ageMs < CACHE_TTL_MS) {
+          console.log(`[cache] HIT for issue: ${cacheKey}`)
           return {
             openPRCount: data.open_pr_count,
             status: resolveStatus(data.open_pr_count),
             cached: true,
+            cached_at: data.cached_at,
           }
         }
       }
@@ -66,9 +59,10 @@ export async function checkIssueLiveness(owner, repo, issueNumber) {
       console.warn(`[livenessCheck] cache read failed for ${cacheKey}, fetching live`)
     }
 
+    console.log(`[cache] MISS for issue: ${cacheKey}`)
+
     // ── 2. Fetch live from GitHub ─────────────────────────────────────────────
-    // Never let API failure crash the response — getIssueOpenPRs already returns 0 on error
-    const openPRCount = await getIssueOpenPRs(owner, repo, issueNumber)
+    const openPRCount = preFetchedOpenPRCount !== null ? preFetchedOpenPRCount : await getIssueOpenPRs(owner, repo, issueNumber)
     const status      = resolveStatus(openPRCount)
 
     // ── 3. Persist to cache (fire-and-forget — never blocks the response) ─────
@@ -88,7 +82,7 @@ export async function checkIssueLiveness(owner, repo, issueNumber) {
         if (error) console.warn('[livenessCheck] cache write failed:', error.message)
       })
 
-    return { openPRCount, status, cached: false }
+    return { openPRCount, status, cached: false, cached_at: new Date().toISOString() }
 
   } catch (err) {
     // Never let API failure crash the response

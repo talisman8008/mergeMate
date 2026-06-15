@@ -1,9 +1,9 @@
 const LEVEL_CONFIG = {
   beginner: {
     label: 'Beginner',
-    bg: 'bg-[#1f6feb]/15',
-    border: 'border-[#1f6feb]/40',
-    text: 'text-[#58a6ff]',
+    bg: 'bg-[var(--accent-blue-dim)]',
+    border: 'border-[var(--accent-blue)]',
+    text: 'text-[var(--accent-blue)]',
     icon: (
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M12 2L2 7l10 5 10-5-10-5z" />
@@ -14,9 +14,9 @@ const LEVEL_CONFIG = {
   },
   intermediate: {
     label: 'Intermediate',
-    bg: 'bg-[#d29922]/15',
-    border: 'border-[#d29922]/40',
-    text: 'text-[#d29922]',
+    bg: 'bg-[var(--accent-amber-dim)]',
+    border: 'border-[var(--accent-amber)]',
+    text: 'text-[var(--accent-amber)]',
     icon: (
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
@@ -25,9 +25,9 @@ const LEVEL_CONFIG = {
   },
   advanced: {
     label: 'Advanced',
-    bg: 'bg-[#238636]/15',
-    border: 'border-[#238636]/40',
-    text: 'text-[#238636]',
+    bg: 'bg-[var(--accent-green-dim)]',
+    border: 'border-[var(--accent-green)]',
+    text: 'text-[var(--accent-green)]',
     icon: (
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
@@ -41,9 +41,9 @@ export default function SkillBadge({ level }) {
   const key = (level ?? '').toLowerCase()
   const config = LEVEL_CONFIG[key] ?? {
     label: level ?? 'Unknown',
-    bg: 'bg-[#8b949e]/15',
-    border: 'border-[#8b949e]/30',
-    text: 'text-[#8b949e]',
+    bg: 'bg-[var(--text-faint)]',
+    border: 'border-[var(--text-muted)]',
+    text: 'text-[var(--text-muted)]',
     icon: null,
   }
 

@@ -2,7 +2,7 @@
  * githubPRService.js — GitHub API calls for PR check and issue analysis.
  */
 
-import { getRepoPRs } from './github.js'
+import { getRepoPRs, getContributing } from './github.js'
 
 const BASE_URL = 'https://api.github.com'
 
@@ -29,18 +29,7 @@ function parseLinkedIssueNumber(body) {
   return match ? parseInt(match[1], 10) : null
 }
 
-async function fetchContributing(owner, repo) {
-  try {
-    const data = await directFetch(`/repos/${owner}/${repo}/contents/CONTRIBUTING.md`)
-    if (data?.content) {
-      return Buffer.from(data.content, 'base64').toString('utf-8')
-    }
-    return null
-  } catch (err) {
-    // CONTRIBUTING.md not found or other error — not critical
-    return null
-  }
-}
+
 
 async function fetchRecentClosedPRs(owner, repo) {
   try {
@@ -79,7 +68,7 @@ export async function fetchPRData({ owner, repo, prNumber }) {
     }
   }
 
-  const contributing = await fetchContributing(owner, repo)
+  const contributing = await getContributing(owner, repo)
   const recentClosedPRs = await fetchRecentClosedPRs(owner, repo)
 
   return { diff, issueTitle, issueBody, contributing, recentClosedPRs, issueNumber }
@@ -91,7 +80,7 @@ export async function fetchIssueData({ owner, repo, issueNumber }) {
   const issueTitle = issueData.title
   const issueBody = issueData.body || ''
 
-  const contributing = await fetchContributing(owner, repo)
+  const contributing = await getContributing(owner, repo)
   const recentClosedPRs = await fetchRecentClosedPRs(owner, repo)
 
   return { issueTitle, issueBody, contributing, recentClosedPRs }

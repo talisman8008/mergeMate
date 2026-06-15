@@ -388,10 +388,10 @@ export async function getUserActivity(username) {
     const weeks = coll.contributionCalendar?.weeks || []
     
     const contributionSplit = [
-      { name: 'Commits', value: coll.totalCommitContributions || 0, color: '#5c5c5c' },
-      { name: 'PRs', value: coll.totalPullRequestContributions || 0, color: '#b8a282' },
-      { name: 'Issues', value: coll.totalIssueContributions || 0, color: '#e2ccab' },
-      { name: 'Reviews', value: coll.totalPullRequestReviewContributions || 0, color: '#d99c52' }
+      { name: 'Commits', value: coll.totalCommitContributions || 0, color: 'var(--accent-green)' },
+      { name: 'PRs', value: coll.totalPullRequestContributions || 0, color: 'var(--accent-blue)' },
+      { name: 'Issues', value: coll.totalIssueContributions || 0, color: 'var(--accent-amber)' },
+      { name: 'Reviews', value: coll.totalPullRequestReviewContributions || 0, color: 'var(--accent-purple)' }
     ].filter(item => item.value > 0)
     
     const dayMap = {}

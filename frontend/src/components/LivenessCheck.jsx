@@ -1,7 +1,7 @@
 function getBadgeConfig(count) {
-  if (count === 0) return { label: 'No competition', color: 'var(--green)', icon: '✓' }
+  if (count === 0) return { label: 'No competition', color: 'var(--accent-green)', icon: '✓' }
   if (count <= 2) return { label: `${count} competing`, color: 'var(--accent-amber)', icon: '⚡' }
-  return { label: `${count} competing`, color: 'var(--red)', icon: '✕' }
+  return { label: `${count} competing`, color: 'var(--accent-red)', icon: '✕' }
 }
 
 export default function LivenessCheck({ openPRCount }) {

@@ -15,7 +15,7 @@ export default function App() {
   if (loading) {
     return (
       <div className="bg-[var(--canvas)] min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-[#30363d] border-t-[#238636] animate-spin" />
+        <div className="w-8 h-8 rounded-full border-2 border-[var(--border)] border-t-[var(--accent-green)] animate-spin" />
       </div>
     )
   }

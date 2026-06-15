@@ -119,6 +119,160 @@ router.get('/dashboard', requireAuth, async (req, res) => {
   }
 })
 
+// ── GET /api/user/merged-prs ─────────────────────────────────────────────────
+
+router.get('/merged-prs', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.id
+    let username = req.user.user_metadata?.user_name || req.user.user_metadata?.preferred_username
+
+    // Check users table for username, fallback and update if necessary
+    const { data: userRow } = await supabase
+      .from('users')
+      .select('username')
+      .eq('id', userId)
+      .maybeSingle()
+
+    if (userRow?.username) {
+      username = userRow.username
+    } else if (username) {
+      await supabase.from('users').update({ username }).eq('id', userId)
+    }
+
+    if (!username) {
+      return res.json({ heatmapData: {}, totalMerged: 0, recentMerged: [] })
+    }
+
+    // Check cache
+    const { data: cacheEntry } = await supabase
+      .from('user_merged_prs_cache')
+      .select('data_json, cached_at')
+      .eq('user_id', userId)
+      .maybeSingle()
+
+    if (cacheEntry && cacheEntry.cached_at) {
+      const cacheAge = Date.now() - new Date(cacheEntry.cached_at).getTime()
+      if (cacheAge < 1000 * 60 * 60 && cacheEntry.data_json && cacheEntry.data_json.recentOpen) {
+        console.log(`[merged-prs] cache HIT for user: ${username}`)
+        return res.json(cacheEntry.data_json)
+      }
+    }
+
+    console.log(`[merged-prs] cache MISS for user: ${username} — fetching GitHub`)
+
+    // Fetch from GitHub GraphQL
+    const query = `
+      query GetMergedPRs($username: String!) {
+        user(login: $username) {
+          pullRequests(
+            states: [MERGED]
+            first: 100
+            orderBy: { field: UPDATED_AT, direction: DESC }
+          ) {
+            nodes {
+              mergedAt
+              title
+              url
+              repository {
+                nameWithOwner
+                stargazerCount
+              }
+            }
+          }
+          openPullRequests: pullRequests(
+            states: [OPEN]
+            first: 10
+            orderBy: { field: UPDATED_AT, direction: DESC }
+          ) {
+            nodes {
+              createdAt
+              title
+              url
+              repository {
+                nameWithOwner
+              }
+            }
+          }
+        }
+      }
+    `
+
+    const response = await fetch('https://api.github.com/graphql', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query,
+        variables: { username }
+      })
+    })
+
+    if (!response.ok) {
+      throw new Error(`GitHub API returned ${response.status}`)
+    }
+
+    const result = await response.json()
+    if (result.errors) {
+      throw new Error(`GraphQL Error: ${result.errors[0].message}`)
+    }
+
+    const nodes = result.data?.user?.pullRequests?.nodes || []
+    const openNodes = result.data?.user?.openPullRequests?.nodes || []
+
+    const heatmapData = {}
+    let totalMerged = 0
+    const recentMerged = []
+
+    for (const pr of nodes) {
+      totalMerged++
+      const dateStr = pr.mergedAt.split('T')[0]
+      if (!heatmapData[dateStr]) {
+        heatmapData[dateStr] = 0
+      }
+      heatmapData[dateStr]++
+      
+      if (recentMerged.length < 5) {
+        recentMerged.push({
+          title: pr.title,
+          url: pr.url,
+          repo: pr.repository.nameWithOwner,
+          mergedAt: pr.mergedAt
+        })
+      }
+    }
+
+    const recentOpen = openNodes.slice(0, 5).map(pr => ({
+      title: pr.title,
+      url: pr.url,
+      repo: pr.repository.nameWithOwner,
+      createdAt: pr.createdAt
+    }))
+
+    const payload = {
+      heatmapData,
+      totalMerged,
+      recentMerged,
+      recentOpen
+    }
+
+    // Save to cache
+    await supabase.from('user_merged_prs_cache').upsert({
+      user_id: userId,
+      data_json: payload,
+      cached_at: new Date().toISOString()
+    })
+
+    return res.json(payload)
+
+  } catch (err) {
+    console.error('[user] GET /merged-prs failed:', err.message)
+    // Never crash — gracefully return empty data
+    return res.json({ heatmapData: {}, totalMerged: 0, recentMerged: [] })
+  }
+})
+
 // ── GET /api/user/github-profile ─────────────────────────────────────────────
 
 router.get('/github-profile', requireAuth, async (req, res) => {
@@ -199,6 +353,12 @@ router.post('/seed-demo', requireAuth, async (req, res) => {
   try {
     const userId = req.user.id
 
+    // Clear existing issues first
+    await supabase.from('saved_issues').delete().eq('user_id', userId)
+
+    const now = new Date()
+    const offset = (days) => new Date(now.getTime() - days * 24 * 60 * 60 * 1000).toISOString()
+
     const demoIssues = [
       {
         user_id: userId,
@@ -206,6 +366,7 @@ router.post('/seed-demo', requireAuth, async (req, res) => {
         repo_name: 'facebook/react',
         issue_url: 'https://github.com/facebook/react/issues/28000',
         status: 'done',
+        created_at: offset(2)
       },
       {
         user_id: userId,
@@ -213,28 +374,56 @@ router.post('/seed-demo', requireAuth, async (req, res) => {
         repo_name: 'tailwindlabs/tailwindcss',
         issue_url: 'https://github.com/tailwindlabs/tailwindcss/issues/1420',
         status: 'done',
+        created_at: offset(15)
       },
       {
         user_id: userId,
         issue_title: 'Migrate to Vite 5',
         repo_name: 'vitejs/vite',
         issue_url: 'https://github.com/vitejs/vite/issues/15123',
-        status: 'attempting',
+        status: 'done',
+        created_at: offset(35)
       },
       {
         user_id: userId,
         issue_title: 'Support markdown in comments',
         repo_name: 'supabase/supabase',
         issue_url: 'https://github.com/supabase/supabase/issues/890',
-        status: 'saved',
+        status: 'attempting',
+        created_at: offset(4)
       },
       {
         user_id: userId,
         issue_title: 'Update outdated documentation',
         repo_name: 'vercel/next.js',
         issue_url: 'https://github.com/vercel/next.js/issues/62010',
-        status: 'saved',
+        status: 'attempting',
+        created_at: offset(10)
       },
+      {
+        user_id: userId,
+        issue_title: 'Fix hydration error on server render',
+        repo_name: 'facebook/react',
+        issue_url: 'https://github.com/facebook/react/issues/1',
+        status: 'attempting',
+        created_at: offset(20)
+      },
+      {
+        user_id: userId,
+        issue_title: 'Support dynamic arbitrary values',
+        repo_name: 'tailwindlabs/tailwindcss',
+        issue_url: 'https://github.com/tailwindlabs/tailwindcss/issues/3',
+        status: 'saved',
+        created_at: offset(45)
+      },
+      {
+        user_id: userId,
+        issue_title: 'Add new theme settings',
+        repo_name: 'microsoft/vscode',
+        issue_url: 'https://github.com/microsoft/vscode/pull/4',
+        status: 'saved',
+        created_at: offset(55)
+      }
     ]
 
     const { error } = await supabase
@@ -246,7 +435,7 @@ router.post('/seed-demo', requireAuth, async (req, res) => {
       return res.status(500).json({ error: 'Failed to seed demo data' })
     }
 
-    return res.json({ message: 'Demo data seeded successfully', count: demoIssues.length })
+    return res.json({ success: true, mode: 'demo' })
   } catch (err) {
     console.error('[user] POST /seed-demo failed:', err.message)
     return res.status(500).json({ error: err.message || 'Internal server error' })
@@ -298,6 +487,31 @@ router.post('/issues', requireAuth, async (req, res) => {
     return res.status(201).json(data)
   } catch (err) {
     console.error('[user] POST /issues failed:', err.message)
+    return res.status(500).json({ error: err.message || 'Internal server error' })
+  }
+})
+
+// ── DELETE /api/user/issues/:id ──────────────────────────────────────────────
+
+router.delete('/issues/:id', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.id
+    const issueId = req.params.id
+
+    const { error } = await supabase
+      .from('saved_issues')
+      .delete()
+      .eq('id', issueId)
+      .eq('user_id', userId)
+
+    if (error) {
+      console.error('[user] DELETE issue failed:', error.message)
+      return res.status(500).json({ error: 'Failed to delete issue' })
+    }
+
+    return res.json({ success: true })
+  } catch (err) {
+    console.error('[user] DELETE /issues/:id failed:', err.message)
     return res.status(500).json({ error: err.message || 'Internal server error' })
   }
 })

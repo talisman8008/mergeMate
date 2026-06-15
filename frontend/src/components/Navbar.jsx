@@ -69,27 +69,27 @@ export default function Navbar({ user, signIn, signOut }) {
   }
 
   const isDashboard = location.pathname === '/dashboard'
-  const navClass = isLanding 
-    ? `fixed top-0 left-0 w-full z-50 transition-transform duration-300 ${scrolled ? 'translate-y-0 bg-[var(--landing-canvas)] border-b border-[var(--landing-border)]' : '-translate-y-full bg-transparent border-transparent'}`
-    : `sticky top-0 z-50 transition-all duration-300 ${scrolled ? (isDashboard ? 'bg-[var(--color-dashboard-nav)]/90' : 'bg-[var(--canvas)]/90') + ' backdrop-blur-sm border-b border-[var(--border)]' : (isDashboard ? 'bg-[var(--color-dashboard-nav)] border-transparent' : 'bg-transparent border-transparent')}`
+  const navClass = isLanding
+    ? `fixed top-0 left-0 w-full z-50 transition-transform duration-300 ${scrolled ? 'translate-y-0 bg-[var(--bg-primary)] border-b border-[var(--border)]' : '-translate-y-full bg-transparent border-transparent'}`
+    : `sticky top-0 z-50 transition-all duration-300 ${scrolled ? (isDashboard ? 'bg-[var(--bg-primary)]/90' : 'bg-[var(--bg-primary)]/90') + ' backdrop-blur-sm border-b border-[var(--border)]' : (isDashboard ? 'bg-[var(--bg-primary)] border-transparent' : 'bg-transparent border-transparent')}`
 
   const getNavLinkClass = ({ isActive }) => {
     if (isLanding) {
-      return `text-[13px] transition-colors duration-150 px-2.5 py-1.5 rounded-md ${isActive ? 'font-bold text-[var(--landing-text)] bg-black/5' : 'font-medium text-[var(--landing-text-secondary)] hover:bg-black/5 hover:text-[var(--landing-text)]'}`
+      return `font-sans text-[13px] transition-colors duration-150 px-2.5 py-1.5 rounded-md ${isActive ? 'font-semibold text-[var(--text-primary)] bg-[var(--bg-card-hover)]' : 'font-medium text-[var(--text-muted)] hover:bg-[var(--bg-card-hover)] hover:text-[var(--text-primary)]'}`
     }
-    return `text-[13px] transition-colors duration-150 px-2.5 py-1.5 rounded-md ${isActive ? 'font-bold bg-[#FFEED8] text-[#484848]' : 'font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-elevated)] hover:text-[var(--text)]'}`
+    return `font-sans text-[13px] transition-colors duration-150 px-2.5 py-1.5 rounded-md ${isActive ? 'font-semibold bg-[var(--bg-card-hover)] text-[var(--text-primary)]' : 'font-medium text-[var(--text-muted)] hover:bg-[var(--bg-card-hover)] hover:text-[var(--text-primary)]'}`
   }
 
   return (
     <nav className={navClass}>
-      <div className="w-full mx-auto px-4 md:px-8 lg:px-12 xl:px-16 h-12 flex items-center justify-between gap-6">
+      <div className="w-full mx-auto px-4 md:px-8 lg:px-12 xl:px-16 h-14 flex items-center justify-between gap-6">
 
         {/* Wordmark */}
         <NavLink
           to="/"
           id="nav-wordmark"
-          className="text-sm font-semibold flex-shrink-0"
-          style={{ color: 'var(--text)' }}
+          className="font-sans text-sm font-semibold flex-shrink-0"
+          style={{ color: 'var(--text-primary)' }}
         >
           FirstMerge
         </NavLink>
@@ -115,7 +115,7 @@ export default function Navbar({ user, signIn, signOut }) {
           {!isLanding && (
             <button
               onClick={toggleTheme}
-              className="p-1.5 rounded-md transition-colors duration-150 text-[var(--text-secondary)] hover:text-[var(--text)] hover:bg-[var(--surface-elevated)]"
+              className="p-1.5 rounded-md transition-colors duration-150 text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)]"
               aria-label="Toggle theme"
             >
               {isDark ? <SunIcon /> : <MoonIcon />}
@@ -139,7 +139,7 @@ export default function Navbar({ user, signIn, signOut }) {
               <button
                 id="navbar-signout-btn"
                 onClick={signOut}
-                className={isLanding ? "text-[13px] font-medium text-[var(--landing-text-secondary)] hover:text-[var(--landing-text)] hover:bg-black/5 rounded-md px-2.5 py-1.5 transition-colors duration-150 ml-1" : "text-[13px] font-medium text-[var(--text-secondary)] hover:text-[var(--text)] hover:bg-[var(--surface-elevated)] rounded-md px-2.5 py-1.5 transition-colors duration-150 ml-1"}
+                className={isLanding ? "font-sans text-[13px] font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)] rounded-md px-2.5 py-1.5 transition-colors duration-150 ml-1" : "font-sans text-[13px] font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)] rounded-md px-2.5 py-1.5 transition-colors duration-150 ml-1"}
               >
                 Sign out
               </button>
@@ -149,7 +149,7 @@ export default function Navbar({ user, signIn, signOut }) {
             <button
               id="navbar-login-btn"
               onClick={signIn}
-              className={`inline-flex items-center gap-2 text-[13px] font-medium rounded-md px-3 py-1.5 btn-scale focus:outline-none ml-2 ${isLanding ? 'bg-[var(--landing-text)] text-[var(--landing-canvas)]' : 'bg-[var(--teal)] text-black'}`}
+              className={`inline-flex items-center gap-2 font-sans text-[13px] font-medium rounded-md px-3 py-1.5 btn-scale focus:outline-none ml-2 ${isLanding ? 'bg-[var(--text-primary)] text-[var(--bg-primary)]' : 'bg-[var(--accent-green)] text-[var(--bg-primary)]'}`}
             >
               <GitHubIcon />
               Log in

@@ -38,7 +38,8 @@ router.get('/:owner/:repo/:issue', async (req, res) => {
         ...(result.error ? { error: true } : {}),
       },
       error:  result.error ? 'liveness check failed, returning safe default' : null,
-      cached: result.cached,
+      cache_hit: result.cached,
+      cached_at: result.cached_at || null,
     })
 
   } catch (err) {
@@ -47,7 +48,8 @@ router.get('/:owner/:repo/:issue', async (req, res) => {
     return res.json({
       data:   { openPRCount: 0, status: 'fresh', cached: false },
       error:  err.message,
-      cached: false,
+      cache_hit: false,
+      cached_at: null,
     })
   }
 })

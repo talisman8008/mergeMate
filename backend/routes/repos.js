@@ -10,17 +10,9 @@
  */
 
 import { Router } from 'express'
-import { createClient } from '@supabase/supabase-js'
 import { computeFriendlinessScore } from '../services/friendlinessScore.js'
 
 const router = Router()
-
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY,
-)
-
-const SCORE_TTL_MS = 30 * 60 * 1000  // 30 minutes
 
 // ── GET /api/repos/:owner/:repo/score ─────────────────────────────────────────
 
@@ -29,58 +21,8 @@ router.get('/:owner/:repo/score', async (req, res) => {
   const repoFullName    = `${owner}/${repo}`
 
   try {
-    // 1. Check Supabase cache
-    let cached = false
-
-    try {
-      const { data } = await supabase
-        .from('repo_scores')
-        .select('friendliness_score, response_time_hrs, beginner_merge_rate, last_updated')
-        .eq('repo_full_name', repoFullName)
-        .single()
-
-      if (data?.last_updated) {
-        const ageMs = Date.now() - new Date(data.last_updated).getTime()
-        if (ageMs < SCORE_TTL_MS) {
-          return res.json({
-            data: {
-              repo:  repoFullName,
-              score: data.friendliness_score,
-              breakdown: {
-                response_time_hrs:    data.response_time_hrs,
-                beginner_merge_rate:  data.beginner_merge_rate,
-              },
-              fallbacks_used: [],
-              cached: true,
-            },
-            error:  null,
-            cached: true,
-          })
-        }
-      }
-    } catch {
-      // Cache read failure is non-fatal — fall through to fresh computation
-    }
-
-    // 2. Compute fresh score (openPRCount unknown at repo level — pass 0 as neutral)
+    // Compute friendliness score (it will hit cache internally if valid)
     const result = await computeFriendlinessScore(owner, repo, null, 0)
-
-    // 3. Persist to cache (fire-and-forget)
-    supabase
-      .from('repo_scores')
-      .upsert(
-        {
-          repo_full_name:      repoFullName,
-          friendliness_score:  result.score,
-          response_time_hrs:   result.breakdown.response_time_hrs ?? null,
-          beginner_merge_rate: result.breakdown.beginner_merge_rate ?? null,
-          last_updated:        new Date().toISOString(),
-        },
-        { onConflict: 'repo_full_name' },
-      )
-      .then(({ error }) => {
-        if (error) console.warn('[repos] cache write failed:', error.message)
-      })
 
     return res.json({
       data: {
@@ -88,10 +30,11 @@ router.get('/:owner/:repo/score', async (req, res) => {
         score:         result.score,
         breakdown:     result.breakdown,
         fallbacks_used: result.fallbacks_used,
-        cached:        false,
+        cached:        result.cached,
       },
       error:  null,
-      cached: false,
+      cache_hit: result.cached,
+      cached_at: result.cached_at,
     })
 
   } catch (err) {
@@ -99,7 +42,8 @@ router.get('/:owner/:repo/score', async (req, res) => {
     return res.json({
       data:   null,
       error:  err.message,
-      cached: false,
+      cache_hit: false,
+      cached_at: null,
     })
   }
 })

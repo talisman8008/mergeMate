@@ -9,7 +9,117 @@
  *   • "after"  — post-PR verdict   (genuine vs trivial, reason, suggestion)
  */
 
-import { GoogleGenAI } from '@google/genai'
+const GEMINI_KEYS = [
+  process.env.GEMINI_API_KEY_1,
+  process.env.GEMINI_API_KEY_2,
+  process.env.GEMINI_API_KEY_3,
+].filter(Boolean)
+
+const FEATHERLESS_KEY = process.env.FEATHERLESS_API_KEY
+
+async function tryGemini(prompt) {
+  for (const key of GEMINI_KEYS) {
+    try {
+      console.log(`[ai] Trying Gemini key ${GEMINI_KEYS.indexOf(key) + 1}`)
+      
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key=${key}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }]
+          })
+        }
+      )
+
+      if (response.status === 429) {
+        console.warn(`[ai] Gemini key ${GEMINI_KEYS.indexOf(key) + 1} quota exceeded`)
+        continue
+      }
+
+      if (response.status === 401 || response.status === 403) {
+        console.warn(`[ai] Gemini key ${GEMINI_KEYS.indexOf(key) + 1} auth failed`)
+        continue
+      }
+
+      if (!response.ok) {
+        const err = await response.text()
+        throw new Error(`Gemini ${response.status}: ${err.slice(0, 100)}`)
+      }
+
+      const data = await response.json()
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
+      if (!text) throw new Error('Empty Gemini response')
+      
+      console.log(`[ai] Gemini key ${GEMINI_KEYS.indexOf(key) + 1} succeeded`)
+      return text
+
+    } catch (err) {
+      if (err.message.includes('429') || err.message.includes('quota')) {
+        continue
+      }
+      throw err
+    }
+  }
+  return null // all Gemini keys exhausted
+}
+
+async function tryFeatherless(prompt) {
+  if (!FEATHERLESS_KEY) return null
+  
+  try {
+    console.log('[ai] Trying Featherless fallback')
+    
+    const response = await fetch(
+      'https://api.featherless.ai/v1/chat/completions',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${FEATHERLESS_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'Qwen/Qwen2.5-72B-Instruct',
+          messages: [{ role: 'user', content: prompt }],
+          max_tokens: 800,
+          temperature: 0.3
+        })
+      }
+    )
+
+    if (!response.ok) {
+      const err = await response.text()
+      console.warn('[ai] Featherless failed:', err.slice(0, 100))
+      return null
+    }
+
+    const data = await response.json()
+    const text = data?.choices?.[0]?.message?.content
+    if (!text) return null
+    
+    console.log('[ai] Featherless succeeded')
+    return text
+
+  } catch (err) {
+    console.warn('[ai] Featherless error:', err.message)
+    return null
+  }
+}
+
+async function aiRequest(prompt) {
+  // Try Gemini first with rotation
+  const geminiResult = await tryGemini(prompt)
+  if (geminiResult) return geminiResult
+  
+  // Fallback to Featherless
+  const featherlessResult = await tryFeatherless(prompt)
+  if (featherlessResult) return featherlessResult
+  
+  throw new Error(
+    'All AI providers exhausted — try again later or add more API keys'
+  )
+}
 
 // ── Prompt builders ───────────────────────────────────────────────────────────
 
@@ -99,28 +209,12 @@ function stripCodeFences(text) {
  * @returns {Promise<object>} Parsed JSON from Gemini
  */
 export async function analyzeContribution({ issueTitle, issueBody, contributing, recentClosedPRs, diff, mode }) {
-  if (!process.env.GEMINI_API_KEY) {
-    throw new Error('GEMINI_API_KEY is not set in environment variables')
-  }
-
-  // Initialize SDK inside the function to ensure process.env is loaded
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
-
   const prompt = mode === 'after'
     ? buildAfterPrompt({ issueTitle, issueBody, contributing, recentClosedPRs, diff })
     : buildBeforePrompt({ issueTitle, issueBody, contributing, recentClosedPRs })
 
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-flash-lite-latest',
-      contents: prompt,
-    })
-
-    const rawText = response.text
-
-    if (!rawText) {
-      throw new Error('Gemini returned an empty response')
-    }
+    const rawText = await aiRequest(prompt)
 
     const cleanedText = stripCodeFences(rawText)
 
