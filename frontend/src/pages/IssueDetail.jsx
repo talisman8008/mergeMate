@@ -61,6 +61,7 @@ export default function IssueDetail({ user, signIn, signOut }) {
   const [roadmapError, setRoadmapError] = useState(null)
 
   const [savingStatus, setSavingStatus] = useState('idle')
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
 
   const handleSaveIssue = async () => {
     if (!details) return
@@ -166,8 +167,34 @@ export default function IssueDetail({ user, signIn, signOut }) {
                     <h1 className="font-sans text-[28px] font-semibold text-[var(--text-primary)] leading-[1.4] mb-6">
                       {details.issue.title} <span className="font-mono text-[16px] font-normal text-[var(--text-muted)] ml-2">#{number}</span>
                     </h1>
-                    <div className="text-[16px] text-[var(--text-muted)] leading-relaxed bg-[var(--bg-primary)]/20 border border-[rgba(255,255,255,0.05)] shadow-inner p-6 md:p-8 rounded-2xl max-h-[350px] overflow-y-auto" style={{ whiteSpace: 'pre-wrap' }}>
-                      {details.issue.body || 'No description provided.'}
+                    <div className="relative">
+                      <div className={`text-[16px] text-[var(--text-muted)] leading-relaxed bg-[var(--bg-primary)]/20 border border-[rgba(255,255,255,0.05)] shadow-inner p-6 md:p-8 rounded-2xl overflow-hidden transition-all duration-300 ${isDescriptionExpanded ? '' : 'max-h-[300px]'}`} style={{ whiteSpace: 'pre-wrap' }}>
+                        {details.issue.body || 'No description provided.'}
+                      </div>
+                      
+                      {!isDescriptionExpanded && details.issue.body && details.issue.body.length > 400 && (
+                        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[var(--bg-primary)] to-transparent flex items-end justify-center pb-4 rounded-b-2xl pointer-events-none">
+                          <button 
+                            onClick={() => setIsDescriptionExpanded(true)}
+                            className="pointer-events-auto font-sans text-[13px] font-semibold text-[var(--accent-blue)] bg-[var(--bg-card)] px-5 py-2 rounded-full border border-[var(--border)] shadow-md hover:border-[var(--accent-blue)] transition-colors focus:outline-none flex items-center gap-2"
+                          >
+                            Read More
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                          </button>
+                        </div>
+                      )}
+                      
+                      {isDescriptionExpanded && details.issue.body && details.issue.body.length > 400 && (
+                        <div className="flex justify-center mt-6">
+                          <button 
+                            onClick={() => setIsDescriptionExpanded(false)}
+                            className="font-sans text-[13px] font-semibold text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors focus:outline-none flex items-center gap-2"
+                          >
+                            Show Less
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </>
                 )}
@@ -267,38 +294,6 @@ export default function IssueDetail({ user, signIn, signOut }) {
                 ) : null}
               </div>
 
-              {/* Bottom CTA */}
-              {details && details.issue?.html_url && (
-                <div className="pt-8 flex flex-col sm:flex-row gap-4 border-t border-[rgba(255,255,255,0.05)]">
-                  <button
-                    onClick={handleSaveIssue}
-                    disabled={savingStatus !== 'idle'}
-                    className={`flex-1 inline-flex font-sans items-center justify-center gap-2 px-6 h-[44px] rounded-md text-[14px] font-medium transition-all duration-300 disabled:opacity-50 btn-scale focus:outline-none ${
-                      savingStatus === 'saved' || savingStatus === 'already_saved'
-                        ? 'bg-[color-mix(in_srgb,var(--accent-green)_15%,transparent)] text-[var(--accent-green)] border border-[color-mix(in_srgb,var(--accent-green)_30%,transparent)] cursor-not-allowed'
-                        : savingStatus === 'error'
-                          ? 'bg-[color-mix(in_srgb,var(--accent-red)_15%,transparent)] text-[var(--accent-red)] border border-[color-mix(in_srgb,var(--accent-red)_30%,transparent)]'
-                          : 'bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border)] hover:bg-[var(--bg-card-hover)] hover:border-[var(--border-hover)]'
-                    }`}
-                  >
-                    {savingStatus === 'saving' && <><SpinnerIcon /> Saving...</>}
-                    {savingStatus === 'saved' && <><CheckCircleIcon /> Saved</>}
-                    {savingStatus === 'already_saved' && <><CheckCircleIcon /> Saved</>}
-                    {savingStatus === 'error' && 'Failed'}
-                    {savingStatus === 'idle' && 'Save to Dashboard'}
-                  </button>
-
-                  <a 
-                    href={details.issue.html_url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex-1 inline-flex font-sans items-center justify-center gap-3 px-6 h-[44px] rounded-[6px] text-[14px] font-semibold bg-[var(--accent-green)] text-black btn-scale focus:outline-none hover:opacity-90"
-                  >
-                    View on GitHub
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                  </a>
-                </div>
-              )}
 
             </main>
 
@@ -371,6 +366,39 @@ export default function IssueDetail({ user, signIn, signOut }) {
                   </div>
                 ) : null}
               </div>
+
+              {/* Sidebar Action Buttons */}
+              {details && details.issue?.html_url && (
+                <div className="flex flex-col gap-4">
+                  <button
+                    onClick={handleSaveIssue}
+                    disabled={savingStatus !== 'idle'}
+                    className={`w-full inline-flex font-sans items-center justify-center gap-2 px-6 h-[44px] rounded-md text-[14px] font-medium transition-all duration-300 disabled:opacity-50 btn-scale focus:outline-none ${
+                      savingStatus === 'saved' || savingStatus === 'already_saved'
+                        ? 'bg-[color-mix(in_srgb,var(--accent-green)_15%,transparent)] text-[var(--accent-green)] border border-[color-mix(in_srgb,var(--accent-green)_30%,transparent)] cursor-not-allowed'
+                        : savingStatus === 'error'
+                          ? 'bg-[color-mix(in_srgb,var(--accent-red)_15%,transparent)] text-[var(--accent-red)] border border-[color-mix(in_srgb,var(--accent-red)_30%,transparent)]'
+                          : 'bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border)] hover:bg-[var(--bg-card-hover)] hover:border-[var(--border-hover)]'
+                    }`}
+                  >
+                    {savingStatus === 'saving' && <><SpinnerIcon /> Saving...</>}
+                    {savingStatus === 'saved' && <><CheckCircleIcon /> Saved</>}
+                    {savingStatus === 'already_saved' && <><CheckCircleIcon /> Saved</>}
+                    {savingStatus === 'error' && 'Failed'}
+                    {savingStatus === 'idle' && 'Save to Dashboard'}
+                  </button>
+
+                  <a 
+                    href={details.issue.html_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="w-full inline-flex font-sans items-center justify-center gap-3 px-6 h-[44px] rounded-[6px] text-[14px] font-semibold bg-[var(--accent-green)] text-black btn-scale focus:outline-none hover:opacity-90"
+                  >
+                    View on GitHub
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  </a>
+                </div>
+              )}
             </aside>
 
           </div>
