@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="4.50 4.50 91.00 101.50" role="img">
+<title>FirstMerge icon</title>
+<g fill="none" stroke="#5B4FE3" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+<path d="M30,41 C30,63 38,58 50,58"/>
+<path d="M70,41 C70,63 62,58 50,58"/>
+<path d="M50,58 L50,68"/>
+<circle cx="30" cy="30" r="11"/>
+<circle cx="70" cy="30" r="11"/>
+</g>
+<circle cx="50" cy="82" r="14" fill="#FF6240"/>
+</svg>

@@ -27,20 +27,24 @@ const MoonIcon = () => (
   </svg>
 )
 
+const SparklesIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 3l2.8 5.2L20 11l-5.2 2.8L12 19l-2.8-5.2L4 11l5.2-2.8L12 3z"/>
+  </svg>
+)
+
 export default function Navbar({ user, signIn, signOut }) {
-  const [isDark, setIsDark] = useState(true)
+  const [theme, setTheme] = useState('dark')
   const [scrolled, setScrolled] = useState(false)
   const location = useLocation()
   const isLanding = location.pathname === '/'
 
   useEffect(() => {
-    const saved = localStorage.getItem('theme')
+    const saved = localStorage.getItem('theme') || 'dark'
+    setTheme(saved)
+    document.documentElement.classList.remove('light')
     if (saved === 'light') {
       document.documentElement.classList.add('light')
-      setIsDark(false)
-    } else {
-      document.documentElement.classList.remove('light')
-      setIsDark(true)
     }
 
     const handleScroll = () => {
@@ -57,15 +61,16 @@ export default function Navbar({ user, signIn, signOut }) {
   }, [location.pathname])
 
   const toggleTheme = () => {
-    if (isDark) {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark'
+    
+    if (nextTheme === 'light') {
       document.documentElement.classList.add('light')
-      localStorage.setItem('theme', 'light')
-      setIsDark(false)
     } else {
       document.documentElement.classList.remove('light')
-      localStorage.setItem('theme', 'dark')
-      setIsDark(true)
     }
+    
+    localStorage.setItem('theme', nextTheme)
+    setTheme(nextTheme)
   }
 
   const isDashboard = location.pathname === '/dashboard'
@@ -84,30 +89,38 @@ export default function Navbar({ user, signIn, signOut }) {
     <nav className={navClass}>
       <div className="w-full mx-auto px-4 md:px-8 lg:px-12 xl:px-16 h-14 flex items-center justify-between gap-6">
 
-        {/* Wordmark */}
-        <NavLink
-          to="/"
-          id="nav-wordmark"
-          className="font-sans text-sm font-semibold flex-shrink-0"
-          style={{ color: 'var(--text-primary)' }}
-        >
-          FirstMerge
-        </NavLink>
+        {/* Left Side: Logo + Nav Links */}
+        <div className="flex items-center gap-8">
+          {/* Wordmark */}
+          <NavLink
+            to="/"
+            id="nav-wordmark"
+            className="flex-shrink-0 flex items-center h-full"
+          >
+            <img 
+              src={theme === 'dark' 
+                    ? '/logos/firstmerge-logo-dark-bg.svg' 
+                    : '/logos/firstmerge-logo.svg'} 
+              alt="FirstMerge Logo" 
+              className="h-7 w-auto object-contain" 
+            />
+          </NavLink>
 
-        {/* Nav links — only when logged in */}
-        {user && (
-          <div className="flex items-center gap-1.5">
-            <NavLink to="/explore" id="nav-explore" className={getNavLinkClass}>
-              Explore
-            </NavLink>
-            <NavLink to="/prcheck" id="nav-prcheck" className={getNavLinkClass}>
-              PR Check
-            </NavLink>
-            <NavLink to="/dashboard" id="nav-dashboard" className={getNavLinkClass}>
-              Dashboard
-            </NavLink>
-          </div>
-        )}
+          {/* Nav links — only when logged in */}
+          {user && (
+            <div className="flex items-center gap-1.5">
+              <NavLink to="/explore" id="nav-explore" className={getNavLinkClass}>
+                Explore
+              </NavLink>
+              <NavLink to="/prcheck" id="nav-prcheck" className={getNavLinkClass}>
+                PR Check
+              </NavLink>
+              <NavLink to="/dashboard" id="nav-dashboard" className={getNavLinkClass}>
+                Dashboard
+              </NavLink>
+            </div>
+          )}
+        </div>
 
         {/* Right side */}
         <div className="flex items-center gap-2 ml-auto">
@@ -118,7 +131,7 @@ export default function Navbar({ user, signIn, signOut }) {
               className="p-1.5 rounded-md transition-colors duration-150 text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)]"
               aria-label="Toggle theme"
             >
-              {isDark ? <SunIcon /> : <MoonIcon />}
+              {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
             </button>
           )}
 
