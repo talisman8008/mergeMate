@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "FirstMerge PR Check",
+  "version": "1.0",
+  "description": "Checks your PR quality instantly on GitHub.",
+  "permissions": ["storage", "activeTab", "identity"],
+  "action": { "default_popup": "popup.html" },
+  "host_permissions": [
+    "https://github.com/*",
+    "http://localhost:3000/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://github.com/*/pull/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
