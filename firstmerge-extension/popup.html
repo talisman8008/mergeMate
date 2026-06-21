@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FirstMerge PR Check</title>
+  <style>
+    body {
+      background-color: #17151F;
+      font-family: system-ui, sans-serif;
+      color: #F2F1F7;
+      width: 280px;
+      padding: 20px;
+      margin: 0;
+    }
+    .header-title {
+      color: #9F97F0;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+    .header-subtitle {
+      color: #6A677D;
+      font-size: 12px;
+      margin-bottom: 20px;
+    }
+    .divider {
+      border-top: 1px solid #322F42;
+      margin-bottom: 20px;
+    }
+    /* Logged Out View */
+    #logged-out .description {
+      color: #9C99AD;
+      font-size: 13px;
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+    #login-btn {
+      width: 100%;
+      background-color: #5B4FE3;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    #login-error {
+      color: #D87575;
+      font-size: 11px;
+      margin-top: 8px;
+      text-align: center;
+    }
+    /* Logged In View */
+    #logged-in {
+      display: none;
+    }
+    #username-display {
+      color: #9C99AD;
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+    #logged-in .small-text {
+      color: #6A677D;
+      font-size: 11px;
+      margin-bottom: 16px;
+    }
+    #logout-btn {
+      width: 100%;
+      background-color: transparent;
+      color: #D87575;
+      border: 1px solid #D87575;
+      border-radius: 8px;
+      padding: 8px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+  </style>
+  <script src="popup.js" defer></script>
+</head>
+<body>
+  <div class="header-title">FirstMerge</div>
+  <div class="header-subtitle">PR Check</div>
+  <div class="divider"></div>
+
+  <div id="logged-out">
+    <div class="description">Check your PRs instantly on GitHub.</div>
+    <button id="login-btn">Login with GitHub</button>
+    <div id="login-error"></div>
+  </div>
+
+  <div id="logged-in">
+    <div id="username-display"></div>
+    <div class="small-text">Extension is active on GitHub PR pages.</div>
+    <button id="logout-btn">Logout</button>
+  </div>
+</body>
+</html>
