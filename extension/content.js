@@ -1,7 +1,7 @@
 // This script runs directly on GitHub Pull Request pages.
 console.log('FirstMerge content script loaded on a Pull Request page.');
 
-const BACKEND_URL = 'http://localhost:3000';
+const BACKEND_URL = 'https://your-backend.up.railway.app';
 
 function createFirstMergeBanner() {
   const banner = document.createElement('div');
@@ -76,11 +76,8 @@ async function analyzePRAutomatically() {
         </div>
         
         <div style="padding: 32px; text-align: center; border-bottom: 2px solid #322F42; background-color: ${verdictBg};">
-          <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
+          <div id="verdict-container" style="display: flex; align-items: center; justify-content: center; gap: 12px;">
             ${iconToUse}
-            <span style="font-size: 32px; font-weight: bold; text-transform: uppercase; letter-spacing: -0.02em; color: ${verdictColor};">
-              ${data.verdict || 'UNKNOWN'}
-            </span>
           </div>
         </div>
 
@@ -89,9 +86,7 @@ async function analyzePRAutomatically() {
             <h3 style="margin: 0 0 12px 0; font-family: 'Space Mono', monospace; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.1em; color: #F2F1F7;">
               Reason
             </h3>
-            <p style="margin: 0; font-size: 16px; color: #9C99AD; line-height: 1.6;">
-              ${data.reason || 'No reason provided.'}
-            </p>
+            <div id="reason-container"></div>
           </div>
 
           <div>
@@ -99,18 +94,31 @@ async function analyzePRAutomatically() {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
               Suggestion
             </h3>
-            <div style="background-color: rgba(23, 21, 31, 0.2); border: 1px solid rgba(255,255,255,0.05); box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.05); border-radius: 8px; padding: 20px; font-family: 'Space Mono', monospace; font-size: 14px; color: #F2F1F7; line-height: 1.6; white-space: pre-wrap;">
-              ${data.suggestion || 'No suggestion provided.'}
-            </div>
+            <div id="suggestion-container"></div>
           </div>
         </div>
         
         <div style="padding: 24px 32px; border-top: 2px solid #322F42; display: flex; justify-content: flex-end; background-color: #17151F;">
-          <a href="http://localhost:5173/explore" target="_blank" style="text-decoration: none; font-family: 'Space Mono', monospace; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.1em; background-color: transparent; color: #F2F1F7; border: 1px solid #322F42; padding: 12px 24px; border-radius: 6px; cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#322F42'" onmouseout="this.style.backgroundColor='transparent'">
+          <a href="https://your-frontend.vercel.app/explore" target="_blank" style="text-decoration: none; font-family: 'Space Mono', monospace; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.1em; background-color: transparent; color: #F2F1F7; border: 1px solid #322F42; padding: 12px 24px; border-radius: 6px; cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#322F42'" onmouseout="this.style.backgroundColor='transparent'">
             Explore More Issues →
           </a>
         </div>
       `;
+
+      const verdictSpan = document.createElement('span');
+      verdictSpan.style.cssText = `font-size: 32px; font-weight: bold; text-transform: uppercase; letter-spacing: -0.02em; color: ${verdictColor};`;
+      verdictSpan.textContent = data.verdict || 'UNKNOWN';
+      content.querySelector('#verdict-container').appendChild(verdictSpan);
+
+      const reasonP = document.createElement('p');
+      reasonP.style.cssText = `margin: 0; font-size: 16px; color: #9C99AD; line-height: 1.6;`;
+      reasonP.textContent = data.reason || 'No reason provided.';
+      content.querySelector('#reason-container').appendChild(reasonP);
+
+      const suggestionDiv = document.createElement('div');
+      suggestionDiv.style.cssText = `background-color: rgba(23, 21, 31, 0.2); border: 1px solid rgba(255,255,255,0.05); box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.05); border-radius: 8px; padding: 20px; font-family: 'Space Mono', monospace; font-size: 14px; color: #F2F1F7; line-height: 1.6; white-space: pre-wrap;`;
+      suggestionDiv.textContent = data.suggestion || 'No suggestion provided.';
+      content.querySelector('#suggestion-container').appendChild(suggestionDiv);
     } else {
       content.style.padding = '16px';
       content.innerText = typeof data === 'string' ? data : JSON.stringify(data, null, 2);

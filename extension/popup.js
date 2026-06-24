@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const resultEl = document.getElementById('result');
 
   // Replace this with your backend's actual URL/port when deployed
-  const BACKEND_URL = 'http://localhost:3000';
+  const BACKEND_URL = 'https://your-backend.up.railway.app';
 
   checkPrBtn.addEventListener('click', async () => {
     // 1. Get the current active tab

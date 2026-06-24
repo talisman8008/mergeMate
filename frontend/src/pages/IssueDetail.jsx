@@ -5,7 +5,7 @@ import supabase from '../lib/supabase.js'
 import ScrollStack, { ScrollStackItem } from '../components/ScrollStack.jsx'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import rehypeRaw from 'rehype-raw'
+import rehypeSanitize from 'rehype-sanitize'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'
 
@@ -116,20 +116,33 @@ export default function IssueDetail({ user, signIn, signOut }) {
       .catch(err => setDetailsError(err.message))
 
     // 2. Fetch AI Roadmap
-    const issueUrl = `https://github.com/${owner}/${repo}/issues/${number}`
-    fetch(`${BACKEND_URL}/api/prcheck/before`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ issueUrl })
-    })
-      .then(res => res.json())
-      .then(json => {
+    const fetchRoadmap = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        const token = session?.access_token
+
+        const issueUrl = `https://github.com/${owner}/${repo}/issues/${number}`
+        const res = await fetch(`${BACKEND_URL}/api/prcheck/before`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ issueUrl })
+        })
+        const json = await res.json()
         if (json.error) throw new Error(json.error)
         setRoadmap(json)
-      })
-      .catch(err => setRoadmapError(err.message))
-      .finally(() => setRoadmapLoading(false))
+      } catch (err) {
+        setRoadmapError(err.message)
+      } finally {
+        setRoadmapLoading(false)
+      }
+    }
+
+    fetchRoadmap()
   }, [owner, repo, number])
+
 
   return (
     <div className="bg-[var(--bg-primary)] min-h-screen text-[var(--text-primary)] font-sans relative">
@@ -176,7 +189,7 @@ export default function IssueDetail({ user, signIn, signOut }) {
                         {details.issue.body ? (
                           <ReactMarkdown 
                             remarkPlugins={[remarkGfm]}
-                            rehypePlugins={[rehypeRaw]}
+                            rehypePlugins={[rehypeSanitize]}
                             components={{
                               h1: ({node, ...props}) => <h1 className="text-2xl font-bold text-[var(--text-primary)] mt-6 mb-4" {...props} />,
                               h2: ({node, ...props}) => <h2 className="text-xl font-bold text-[var(--text-primary)] mt-5 mb-3" {...props} />,

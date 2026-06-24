@@ -20,7 +20,9 @@ const FEATHERLESS_KEY = process.env.FEATHERLESS_API_KEY
 async function tryGemini(prompt) {
   for (const key of GEMINI_KEYS) {
     try {
-      console.log(`[ai] Trying Gemini key ${GEMINI_KEYS.indexOf(key) + 1}`)
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`[ai] Trying Gemini key ${GEMINI_KEYS.indexOf(key) + 1}`)
+      }
       
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key=${key}`,
@@ -52,7 +54,9 @@ async function tryGemini(prompt) {
       const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
       if (!text) throw new Error('Empty Gemini response')
       
-      console.log(`[ai] Gemini key ${GEMINI_KEYS.indexOf(key) + 1} succeeded`)
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`[ai] Gemini key ${GEMINI_KEYS.indexOf(key) + 1} succeeded`)
+      }
       return text
 
     } catch (err) {
@@ -69,7 +73,9 @@ async function tryFeatherless(prompt) {
   if (!FEATHERLESS_KEY) return null
   
   try {
-    console.log('[ai] Trying Featherless fallback')
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[ai] Trying Featherless fallback')
+    }
     
     const response = await fetch(
       'https://api.featherless.ai/v1/chat/completions',
@@ -98,7 +104,9 @@ async function tryFeatherless(prompt) {
     const text = data?.choices?.[0]?.message?.content
     if (!text) return null
     
-    console.log('[ai] Featherless succeeded')
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[ai] Featherless succeeded')
+    }
     return text
 
   } catch (err) {
@@ -128,19 +136,25 @@ function buildAfterPrompt({ issueTitle, issueBody, contributing, recentClosedPRs
     .map((pr) => `- "${pr.title}" (${pr.merged ? 'merged' : 'closed without merge'})`)
     .join('\n')
 
+  const MAX_LEN = 4000
+  const safeTitle = (issueTitle || '').slice(0, 200)
+  const safeBody = (issueBody || '').slice(0, MAX_LEN)
+  const safeDiff = (diff || '').slice(0, MAX_LEN)
+  const safeContributing = (contributing || '').slice(0, 1000)
+
   return `You are a senior open-source maintainer reviewing a pull request.
 
-ISSUE TITLE: ${issueTitle}
-ISSUE BODY: ${issueBody}
+ISSUE TITLE: <issue_title>${safeTitle}</issue_title>
+ISSUE BODY: <issue_body>${safeBody}</issue_body>
 
 CONTRIBUTING GUIDELINES:
-${contributing || 'No CONTRIBUTING.md found'}
+<contributing>${safeContributing || 'No CONTRIBUTING.md found'}</contributing>
 
 RECENT CLOSED PRs:
 ${prList || 'None available'}
 
 PR DIFF:
-${diff}
+<diff>${safeDiff}</diff>
 
 Analyse this PR diff against the issue it claims to fix.
 Return ONLY a JSON object with no markdown, no preamble, no explanation:

@@ -143,7 +143,9 @@ export default function Dashboard({ user, signIn, signOut }) {
 
   const handleUnsave = async (issueId) => {
     try {
-      const token = localStorage.getItem('token');
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+      if (!token) return
       const res = await fetch(`${BACKEND_URL}/api/user/issues/${issueId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }

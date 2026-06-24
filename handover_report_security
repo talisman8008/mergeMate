@@ -1,0 +1,54 @@
+# FirstMerge Handover Report
+
+This document outlines all code changes, security fixes, and configurations made during this session. It is designed to act as a handoff reference for another AI or developer.
+
+## Backend Changes
+
+### 1. Security & Middleware (`backend/index.js`, `backend/.env`)
+- **CORS Config**: Updated `app.use(cors())` to dynamically allow the `ALLOWED_ORIGIN` environment variable (defaults to `http://localhost:5173`) and to send credentials.
+- **Payload Limits**: Replaced the default `express.json()` with `express.json({ limit: '10kb' })` to prevent large payload attacks.
+- **Rate Limiting**: Added `express-rate-limit` dependency. Implemented limits on the following routes:
+  - `/api/prcheck`: max 30 requests per 15 minutes.
+  - `/api/issues`: max 20 requests per 1 minute.
+- **Environment**: Added `ALLOWED_ORIGIN=http://localhost:5173` to `backend/.env`.
+
+### 2. GitHub Service & Search Query (`backend/services/github.js`)
+- **Query Freshness**: Added `sort:created-desc` to the GitHub GraphQL query string in `searchIssues()`. This fixes an issue where the API was returning very old, stale issues (e.g., 1950 days old) by enforcing a chronological sort rather than "best match".
+- **Token Leak Fixed**: Deleted `console.log('GitHub token:', ...)` entirely.
+
+### 3. Gemini Prompt Sanitization (`backend/services/geminiService.js`)
+- **Prompt Token Limiting & Safety**: Inside `buildAfterPrompt`, added hard limits to user-supplied variables before interpolating them into the prompt.
+  - `issueTitle`: sliced to 200 chars max.
+  - `issueBody` and `diff`: sliced to 4000 chars max.
+  - `contributing`: sliced to 1000 chars max.
+- **XML Tagging**: Wrapped these variables in XML tags (e.g., `<issue_title>`, `<diff>`) in the prompt template to reduce the risk of prompt injection and clarify structure for the LLM.
+
+### 4. Logger Cleanup (Multiple Files)
+- Wrapped non-essential `console.log` statements with `if (process.env.NODE_ENV !== 'production')` in:
+  - `backend/services/github.js`
+  - `backend/routes/issues.js`
+  - `backend/services/geminiService.js`
+
+## Frontend Changes
+
+### 1. Secure Token Fetching (`frontend/src/pages/Dashboard.jsx`)
+- **Token Retrieval**: In the `handleUnsave` function, replaced the insecure `localStorage.getItem('token')` with `supabase.auth.getSession()` to securely extract `session.access_token`.
+
+### 2. XSS Prevention in Markdown (`frontend/src/pages/IssueDetail.jsx`, `frontend/package.json`)
+- **Plugin Replacement**: Removed `rehypeRaw` and replaced it with `rehypeSanitize` from `rehype-sanitize`. 
+- **ReactMarkdown**: Updated the `rehypePlugins` array to use `[rehypeSanitize]`. This strictly sanitizes HTML output in the issue body markdown, preventing arbitrary script injection.
+
+## Extension Changes
+
+### 1. Production URLs (`extension/content.js`, `extension/popup.js`)
+- Replaced hardcoded `http://localhost:3000` with `https://your-backend.up.railway.app` for the `BACKEND_URL`.
+- Replaced hardcoded `http://localhost:5173/explore` link with `https://your-frontend.vercel.app/explore` in `extension/content.js`.
+
+### 2. XSS Prevention in DOM Injection (`extension/content.js`)
+- **Inner HTML Refactor**: Modified `analyzePRAutomatically()` to prevent Cross-Site Scripting when rendering AI outputs (`data.verdict`, `data.reason`, `data.suggestion`).
+- **Implementation**: The `innerHTML` string now only contains structural HTML and placeholder divs/containers. The AI data is safely injected by dynamically creating elements (`document.createElement`) and assigning the values via `textContent`, then appending them to the layout.
+
+## Environment & Server State
+- Installed `express-rate-limit` on the backend.
+- Installed `rehype-sanitize` on the frontend.
+- Restarted the backend task (`node index.js`) after wiping the corrupted issue cache.

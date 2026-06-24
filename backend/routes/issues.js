@@ -43,15 +43,23 @@ router.get('/', async (req, res) => {
   const labelsQuery = req.query.labels    ?? 'good-first-issue'
   const searchQuery = req.query.searchQuery ?? ''
 
-  console.log('[issues] Request params:', { language, skillLevel, page, labels: labelsQuery })
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[issues] Request params:', { language, skillLevel, page, labels: labelsQuery })
+  }
 
   const labelsList = labelsQuery.split(',').map(l => l.trim()).filter(Boolean)
   if (!labelsList.includes('good-first-issue')) {
-    labelsList.unshift('good-first-issue') // Always include good first issue
+    labelsList.push('good-first-issue') // Always include good first issue
   }
+  labelsList.sort() // Sort for stable cache key
 
-  // Use a stable cache key. Since labels affect the fetched data, they must be part of the key.
-  const cacheKey = `${language}_${skillLevel}_${labelsList.join('-')}_${searchQuery}`
+  const languagesList = language.split(',').map(l => l.trim()).filter(Boolean).sort()
+  if (languagesList.length === 0) languagesList.push('JavaScript')
+
+  const safeSearchQuery = searchQuery.trim().toLowerCase()
+
+  // Use a stable cache key. Since labels and languages affect the fetched data, they must be part of the key.
+  const cacheKey = `${languagesList.join(',')}_${skillLevel}_${labelsList.join('-')}_${safeSearchQuery}`
   const CACHE_TTL_MS = 60 * 60 * 1000 // 1 hour for the whole search results
   // Note: we can't fully cache the paginated response here if we sort *after* enrichment.
   // Actually, we can cache the ALL enriched list for this query, then slice by page.
@@ -93,25 +101,23 @@ router.get('/', async (req, res) => {
 
     console.log(`[cache] MISS for issues: ${cacheKey}`)
 
-    // 1. Fetch raw issues from GitHub search in parallel
-    const languages = language.split(',').map(l => l.trim()).filter(Boolean)
-    if (languages.length === 0) languages.push('JavaScript')
-
-    const searchPromises = []
-    for (const lang of languages) {
+    // 1. Fetch raw issues from GitHub — run language searches sequentially
+    // to avoid parallel GraphQL calls hitting rate limits and silently dropping a language's results.
+    let rawIssues = []
+    for (const lang of languagesList) {
       for (const lbl of labelsList) {
-        searchPromises.push(searchIssues(lang, skillLevel, [lbl], searchQuery))
+        const results = await searchIssues(lang, skillLevel, [lbl], searchQuery)
+        rawIssues = rawIssues.concat(results)
       }
     }
-    
-    const results = await Promise.all(searchPromises)
-    let rawIssues = results.flat()
 
     if (!rawIssues.length) {
       return res.json({ data: [], total_count: 0, page, has_more: false, error: null })
     }
 
-    // Deduplication
+    // Deduplication — allow up to 2 issues per repo per language selected,
+    // so adding a second language never reduces results from the first.
+    const perRepoCap = Math.max(2, languagesList.length * 2)
     const seenUrls = new Set()
     const repoCounts = {}
     rawIssues = rawIssues.filter((issue) => {
@@ -121,7 +127,7 @@ router.get('/', async (req, res) => {
       const { owner, repo } = parseOwnerRepo(issue.repository_url)
       const repoFullName = `${owner}/${repo}`
       repoCounts[repoFullName] = (repoCounts[repoFullName] || 0) + 1
-      return repoCounts[repoFullName] <= 2
+      return repoCounts[repoFullName] <= perRepoCap
     })
     console.log('[issues] After dedup count:', rawIssues.length)
 
@@ -130,65 +136,72 @@ router.get('/', async (req, res) => {
     rawIssues = rawIssues.filter(issue => /^[\x00-\x7F\s\p{P}]*$/u.test(issue.title))
     console.log('[issues] After quality filter count:', rawIssues.length)
 
-    // 2. Enrich each issue sequentially to avoid rate-limit cascade
+    // 2. Enrich issues in batches to improve speed while avoiding rate-limit cascade
     const enriched = []
+    const BATCH_SIZE = 10
 
-    for (const issue of rawIssues) {
-      try {
-        const { owner, repo } = parseOwnerRepo(issue.repository_url)
-        const repoFullName    = `${owner}/${repo}`
-        const livenessCacheKey = `${owner}/${repo}#${issue.number}`
+    for (let i = 0; i < rawIssues.length; i += BATCH_SIZE) {
+      const batch = rawIssues.slice(i, i + BATCH_SIZE)
+      const batchResults = await Promise.all(batch.map(async (issue) => {
+        try {
+          const { owner, repo } = parseOwnerRepo(issue.repository_url)
+          const repoFullName    = `${owner}/${repo}`
+          const livenessCacheKey = `${owner}/${repo}#${issue.number}`
 
-        // Check individual caches to see if we need the combined GraphQL call
-        const { data: liveData } = await supabase.from('issue_liveness').select('cached_at').eq('issue_id', livenessCacheKey).single()
-        const { data: scoreData } = await supabase.from('repo_scores').select('last_updated').eq('repo_full_name', repoFullName).single()
-        
-        const liveHit = liveData?.cached_at && (Date.now() - new Date(liveData.cached_at).getTime() < LIVE_TTL_MS)
-        const scoreHit = scoreData?.last_updated && (Date.now() - new Date(scoreData.last_updated).getTime() < SCORE_TTL_MS)
-
-        let combinedData = null
-        if (!liveHit || !scoreHit) {
-          combinedData = await getCombinedRepoAndIssueData(owner, repo, issue.number)
+          // Check individual caches to see if we need the combined GraphQL call
+          const { data: liveData } = await supabase.from('issue_liveness').select('cached_at').eq('issue_id', livenessCacheKey).single()
+          const { data: scoreData } = await supabase.from('repo_scores').select('last_updated').eq('repo_full_name', repoFullName).single()
           
-          if (combinedData && combinedData.mergedPRCount > 0) {
-            console.log(`[issues] Skipping ${repoFullName}#${issue.number} as it has a merged PR`)
-            continue // Skip adding it to enriched, effectively hiding it from explore
+          const liveHit = liveData?.cached_at && (Date.now() - new Date(liveData.cached_at).getTime() < LIVE_TTL_MS)
+          const scoreHit = scoreData?.last_updated && (Date.now() - new Date(scoreData.last_updated).getTime() < SCORE_TTL_MS)
+
+          let combinedData = null
+          if (!liveHit || !scoreHit) {
+            combinedData = await getCombinedRepoAndIssueData(owner, repo, issue.number)
+            
+            if (combinedData && combinedData.mergedPRCount > 0) {
+              console.log(`[issues] Skipping ${repoFullName}#${issue.number} as it has a merged PR`)
+              return null // Skip adding it to enriched, effectively hiding it from explore
+            }
           }
+
+          const liveness = await checkIssueLiveness(owner, repo, issue.number, combinedData?.openPRCount ?? null)
+          const scoreRes = await computeFriendlinessScore(
+            owner, 
+            repo, 
+            issue.created_at, 
+            liveness.openPRCount, 
+            combinedData?.closedIssues ?? null, 
+            combinedData?.closedPRs ?? null,
+            combinedData?.repoStats ?? null
+          )
+
+          return {
+            id:               issue.id,
+            title:            issue.title,
+            url:              issue.html_url,
+            repo_name:        repoFullName,
+            language:         issue.language, // GraphQL sets this directly
+            stars:            issue.stars,    // GraphQL sets this directly
+            created_at:       issue.created_at,
+            comments:         issue.comments,
+            number:           issue.number,
+            labels:           issue.labels,
+            friendliness_score: scoreRes.score,
+            score_breakdown:    scoreRes.breakdown,
+            fallbacks_used:     scoreRes.fallbacks_used ?? [],
+            open_pr_count:      liveness.openPRCount,
+            liveness_status:    liveness.status,
+            liveness_cached:    liveness.cached,
+            score_cached:       scoreRes.cached,
+          }
+        } catch (issueErr) {
+          console.warn('[issues] enrichment failed for issue', issue.id, issueErr.message)
+          return null
         }
-
-        const liveness = await checkIssueLiveness(owner, repo, issue.number, combinedData?.openPRCount ?? null)
-        const scoreRes = await computeFriendlinessScore(
-          owner, 
-          repo, 
-          issue.created_at, 
-          liveness.openPRCount, 
-          combinedData?.closedIssues ?? null, 
-          combinedData?.closedPRs ?? null,
-          combinedData?.repoStats ?? null
-        )
-
-        enriched.push({
-          id:               issue.id,
-          title:            issue.title,
-          url:              issue.html_url,
-          repo_name:        repoFullName,
-          language:         issue.language, // GraphQL sets this directly
-          stars:            issue.stars,    // GraphQL sets this directly
-          created_at:       issue.created_at,
-          comments:         issue.comments,
-          number:           issue.number,
-          labels:           issue.labels,
-          friendliness_score: scoreRes.score,
-          score_breakdown:    scoreRes.breakdown,
-          fallbacks_used:     scoreRes.fallbacks_used ?? [],
-          open_pr_count:      liveness.openPRCount,
-          liveness_status:    liveness.status,
-          liveness_cached:    liveness.cached,
-          score_cached:       scoreRes.cached,
-        })
-      } catch (issueErr) {
-        console.warn('[issues] enrichment failed for issue', issue.id, issueErr.message)
-      }
+      }))
+      
+      enriched.push(...batchResults.filter(Boolean))
     }
 
     // 3. Sorting

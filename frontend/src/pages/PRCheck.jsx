@@ -132,9 +132,15 @@ export default function PRCheck({ user, signIn, signOut }) {
     setSavingStatus('idle')
 
     try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
       const res = await fetch(`${BACKEND_URL}/api/prcheck/before`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ issueUrl }),
       })
       const data = await res.json()
@@ -198,9 +204,15 @@ export default function PRCheck({ user, signIn, signOut }) {
     setAfterResult(null)
 
     try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
       const res = await fetch(`${BACKEND_URL}/api/prcheck/after`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ prUrl }),
       })
       const data = await res.json()

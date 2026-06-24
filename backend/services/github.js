@@ -4,7 +4,6 @@
  */
 
 import 'dotenv/config'
-console.log('GitHub token:', process.env.GITHUB_TOKEN?.slice(0, 10))
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN
 
 const DEFAULT_HEADERS = {
@@ -59,7 +58,7 @@ export async function searchIssues(language, skillLevel, labels = ['good-first-i
     const langLower = language.toLowerCase()
     const mappedLanguageQuery = frameworks[langLower] || `language:${language}`
 
-    let q = `${labelClauses} ${mappedLanguageQuery} state:open is:public`
+    let q = `${labelClauses} ${mappedLanguageQuery} state:open is:public sort:created-desc`
     if (skillLevel?.toLowerCase() === 'beginner') q += ' -label:complexity:high'
     if (searchQuery) q += ` ${searchQuery}`
 
@@ -88,12 +87,16 @@ export async function searchIssues(language, skillLevel, labels = ['good-first-i
         }
       }
     `
-    console.log('[issues] GraphQL query string:', query)
-    console.log('[github] Search query being sent:', q)
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[issues] GraphQL query string:', query)
+      console.log('[github] Search query being sent:', q)
+    }
 
     const data = await ghGraphQL(query, { query: q, first: 30 })
-    console.log('[issues] Raw GitHub response:', JSON.stringify(data?.search, null, 2).slice(0, 500))
-    console.log('[github] Issues found:', data?.search?.issueCount)
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[issues] Raw GitHub response:', JSON.stringify(data?.search, null, 2).slice(0, 500))
+      console.log('[github] Issues found:', data?.search?.issueCount)
+    }
 
     const nodes = data?.search?.nodes || []
 
