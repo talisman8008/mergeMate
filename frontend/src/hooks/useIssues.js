@@ -48,7 +48,7 @@ export default function useIssues(initialFilters) {
       setIssues([]) // clear previous
       
       const [result, savedUrls] = await Promise.all([
-        fetchIssues(filters.language, filters.skillLevel, 1, filters.labels, filters.searchQuery),
+        fetchIssues(filters.language, filters.skillLevel, 1, filters.labels, filters.searchQuery, filters.minScore),
         getSavedUrls()
       ])
       
@@ -58,10 +58,7 @@ export default function useIssues(initialFilters) {
         setError(result.error)
       } else {
         // Filter by minScore and exclude already saved/solved issues
-        const filteredData = (result.data || []).filter(issue => 
-          (issue.friendliness_score ?? 0) >= filters.minScore &&
-          !savedUrls.has(issue.url)
-        )
+        const filteredData = (result.data || []).filter(issue => !savedUrls.has(issue.url))
         setIssues(filteredData)
         setHasMore(result.has_more)
         setTotalCount(result.total_count)
@@ -84,17 +81,14 @@ export default function useIssues(initialFilters) {
     
     const nextPage = filters.page + 1
     const [result, savedUrls] = await Promise.all([
-      fetchIssues(filters.language, filters.skillLevel, nextPage, filters.labels, filters.searchQuery),
+      fetchIssues(filters.language, filters.skillLevel, nextPage, filters.labels, filters.searchQuery, filters.minScore),
       getSavedUrls()
     ])
     
     if (result.error) {
       setError(result.error)
     } else {
-      const filteredData = (result.data || []).filter(issue => 
-        (issue.friendliness_score ?? 0) >= filters.minScore &&
-        !savedUrls.has(issue.url)
-      )
+      const filteredData = (result.data || []).filter(issue => !savedUrls.has(issue.url))
       setIssues(prev => [...prev, ...filteredData])
       setFilters(prev => ({ ...prev, page: nextPage }))
       setHasMore(result.has_more)

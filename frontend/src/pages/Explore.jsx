@@ -62,7 +62,7 @@ export default function Explore() {
   const [viewMode, setViewMode] = useState('grid') // 'grid' or 'list'
 
   const [sidebarFilters, setSidebarFilters] = useState({
-    languages: ['Python'],
+    languages: ['JavaScript'],
     skillLevel: 'Beginner',
     minScore: 0,
     searchQuery: '',
@@ -71,7 +71,7 @@ export default function Explore() {
   })
 
   const [fetchParams, setFetchParams] = useState({
-    language: 'Python',
+    language: 'JavaScript',
     page: 1,
     skillLevel: 'beginner',
     minScore: 0,
@@ -85,7 +85,7 @@ export default function Explore() {
   const debouncedSetFetchParams = useCallback(
     debounce((filters) => {
       setFetchParams({
-        language: filters.languages.join(',') || 'Python',
+        language: filters.languages.join(',') || 'JavaScript',
         page: 1,
         skillLevel: filters.skillLevel.toLowerCase() || 'beginner',
         minScore: parseInt(filters.minScore, 10) || 0,
@@ -103,7 +103,7 @@ export default function Explore() {
     if (sidebarFilters.skillLevel !== prevSkillLevelRef.current) {
       prevSkillLevelRef.current = sidebarFilters.skillLevel
       setFetchParams({
-        language: sidebarFilters.languages.join(',') || 'Python',
+        language: sidebarFilters.languages.join(',') || 'JavaScript',
         page: 1,
         skillLevel: sidebarFilters.skillLevel.toLowerCase() || 'beginner',
         minScore: parseInt(sidebarFilters.minScore, 10) || 0,
@@ -207,7 +207,7 @@ export default function Explore() {
                   Try adjusting your filters on the left
                 </p>
                 <button
-                  onClick={() => setSidebarFilters({ languages: ['Python', 'JavaScript'], skillLevel: 'Beginner', minScore: 0, searchQuery: '', labels: ['good-first-issue'], _applied: Date.now() })}
+                  onClick={() => setSidebarFilters({ languages: ['JavaScript'], skillLevel: 'Beginner', minScore: 0, searchQuery: '', labels: ['good-first-issue'], _applied: Date.now() })}
                   className="font-sans text-[13px] font-medium text-black bg-[var(--accent-green)] hover:bg-[#2ea043] px-4 py-2 rounded-md transition-colors"
                 >
                   Reset Filters

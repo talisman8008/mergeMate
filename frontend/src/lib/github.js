@@ -11,14 +11,15 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'
  * @param {string} skillLevel
  * @param {string[]} labels
  */
-export async function fetchIssues(language, skillLevel, page, labels = ['good-first-issue'], searchQuery = '') {
+export async function fetchIssues(language, skillLevel, page, labels = ['good-first-issue'], searchQuery = '', minScore = 0) {
   try {
     const params = new URLSearchParams({
       language,
       skillLevel,
       page: String(page),
       labels: labels.join(','),
-      searchQuery
+      searchQuery,
+      minScore: String(minScore)
     })
     
     const res = await fetch(`${BACKEND_URL}/api/issues?${params}`)

@@ -42,6 +42,7 @@ router.get('/', async (req, res) => {
   const page       = parseInt(req.query.page ?? '1', 10)
   const labelsQuery = req.query.labels    ?? 'good-first-issue'
   const searchQuery = req.query.searchQuery ?? ''
+  const minScore    = parseInt(req.query.minScore ?? '0', 10)
 
   if (process.env.NODE_ENV !== 'production') {
     console.log('[issues] Request params:', { language, skillLevel, page, labels: labelsQuery })
@@ -80,15 +81,17 @@ router.get('/', async (req, res) => {
           console.log(`[cache] HIT for issues: ${cacheKey}`)
           const fullEnriched = data.issues_json
           
+          const filteredFullEnriched = fullEnriched.filter(issue => (issue.friendliness_score ?? 0) >= minScore)
+          
           const itemsPerPage = 10
           const startIndex = (page - 1) * itemsPerPage
-          const sliced = fullEnriched.slice(startIndex, startIndex + itemsPerPage)
+          const sliced = filteredFullEnriched.slice(startIndex, startIndex + itemsPerPage)
           
           return res.json({
             data: sliced,
-            total_count: fullEnriched.length,
+            total_count: filteredFullEnriched.length,
             page: page,
-            has_more: startIndex + itemsPerPage < fullEnriched.length,
+            has_more: startIndex + itemsPerPage < filteredFullEnriched.length,
             error: null,
             cache_hit: true,
             cached_at: data.cached_at,
@@ -225,16 +228,17 @@ router.get('/', async (req, res) => {
         if (error) console.warn('[issues] issues_cache write failed:', error.message)
       })
 
-    // 4. Pagination slicing
+    // 4. Pagination slicing and minScore filter
+    const filteredEnriched = enriched.filter(issue => (issue.friendliness_score ?? 0) >= minScore)
     const itemsPerPage = 10
     const startIndex = (page - 1) * itemsPerPage
-    const sliced = enriched.slice(startIndex, startIndex + itemsPerPage)
+    const sliced = filteredEnriched.slice(startIndex, startIndex + itemsPerPage)
 
     return res.json({ 
       data: sliced, 
-      total_count: enriched.length,
+      total_count: filteredEnriched.length,
       page: page,
-      has_more: startIndex + itemsPerPage < enriched.length,
+      has_more: startIndex + itemsPerPage < filteredEnriched.length,
       error: null 
     })
 
