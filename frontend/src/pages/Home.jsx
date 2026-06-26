@@ -1,10 +1,8 @@
 import { useNavigate } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
 import { Code, BrainCircuit, GitPullRequest, ArrowRight, Activity, Zap } from 'lucide-react'
 import Navbar from '../components/Navbar.jsx'
-import Heatmap from '../components/Heatmap.jsx'
-import { seedActivity } from './Dashboard.jsx'
 
 const GitHubIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -16,6 +14,7 @@ import Aurora from '../components/ui/Aurora.jsx'
 import MergeField from '../components/ui/MergeField.jsx'
 import SpotlightCard from '../components/ui/SpotlightCard.jsx'
 import HorizontalScroller from '../components/HorizontalScroller.jsx'
+
 // Helper for generic fade-in
 const FadeIn = ({ children, delay = 0, className = "" }) => {
   return (
@@ -56,9 +55,15 @@ const SignalRow = ({ name, percent, score, color, delay }) => {
   )
 }
 
+
 export default function Home({ user, signIn, signOut }) {
   const navigate = useNavigate()
   const { scrollYProgress } = useScroll()
+  const drawnY = useSpring(useTransform(scrollYProgress, [0, 1], [0, 4500]), {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  })
   const heroOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0])
   const heroY = useTransform(scrollYProgress, [0, 0.2], [0, 100])
 
@@ -68,6 +73,9 @@ export default function Home({ user, signIn, signOut }) {
 
       <main className="flex-1 flex flex-col w-full relative z-10">
         
+        {/* MergeField SVG lives OUTSIDE the overflow-hidden hero so lines extend through the bento grid */}
+        <MergeField drawnY={drawnY} className="opacity-100 z-0" />
+
         <section className="relative min-h-[100vh] w-full flex flex-col items-center justify-center px-6 overflow-hidden pt-20 pb-16">
           
           {/* Architectural Diagonal Stripe Wallpaper */}
@@ -79,8 +87,6 @@ export default function Home({ user, signIn, signOut }) {
               WebkitMaskImage: 'linear-gradient(to bottom, black 20%, transparent 100%)'
             }}
           />
-
-          <MergeField className="opacity-100 z-0" />
           
           <motion.div 
             style={{ opacity: heroOpacity, y: heroY }}
@@ -147,7 +153,7 @@ export default function Home({ user, signIn, signOut }) {
         </section>
 
         {/* BENTO GRID (FEATURE SHOWCASE) */}
-        <section className="relative w-full max-w-[1200px] mx-auto px-6 py-[120px]">
+        <section className="relative z-10 w-full max-w-[1200px] mx-auto px-6 py-[120px]">
           <Aurora className="opacity-40" />
           
           <div className="text-center mb-20 relative z-10">
@@ -158,16 +164,13 @@ export default function Home({ user, signIn, signOut }) {
             </FadeIn>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 relative z-10 w-full">
             
             {/* The Friendliness Score (Span 8) */}
             <SpotlightCard className="md:col-span-8 p-8 md:p-12 min-h-[400px] flex flex-col justify-center">
-              <div className="w-12 h-12 rounded-xl bg-[var(--accent-blue-dim)] border border-[var(--border-selected)] flex items-center justify-center mb-8">
-                <Activity size={24} className="text-[var(--accent-blue)]" />
-              </div>
-              <h3 className="font-display text-[32px] font-bold text-[var(--text-primary)] mb-4 leading-[1.1]">
-                The Friendliness Score
-              </h3>
+                <h3 className="font-display text-[32px] font-bold text-[var(--text-primary)] mb-4 leading-[1.1]">
+                  The Friendliness Score
+                </h3>
               <p className="text-[18px] text-[var(--text-muted)] mb-10 max-w-[500px]">
                 A label is just hope. We compute a 0-100 score based on maintainer response times, PR collision counts, and actual beginner merge rates.
               </p>
@@ -185,9 +188,6 @@ export default function Home({ user, signIn, signOut }) {
 
             {/* AI Roadmap (Span 4) */}
             <SpotlightCard spotlightColor="var(--accent-purple-dim)" className="md:col-span-4 p-8 md:p-10 min-h-[400px] flex flex-col">
-              <div className="w-12 h-12 rounded-xl bg-[var(--accent-purple-dim)] border border-[color-mix(in_srgb,var(--accent-purple)_30%,transparent)] flex items-center justify-center mb-8">
-                <BrainCircuit size={24} className="text-[var(--accent-purple)]" />
-              </div>
               <h3 className="font-display text-[28px] font-bold text-[var(--text-primary)] mb-4 leading-[1.1]">
                 AI Issue Roadmap
               </h3>
@@ -203,9 +203,7 @@ export default function Home({ user, signIn, signOut }) {
 
             {/* PR Quality Check (Span 5) */}
             <SpotlightCard spotlightColor="var(--accent-orange-dim)" className="md:col-span-5 p-8 md:p-10 min-h-[400px] flex flex-col">
-              <div className="w-12 h-12 rounded-xl bg-[var(--accent-orange-dim)] border border-[color-mix(in_srgb,var(--accent-orange)_30%,transparent)] flex items-center justify-center mb-8">
-                <GitPullRequest size={24} className="text-[var(--accent-orange)]" />
-              </div>
+
               <h3 className="font-display text-[28px] font-bold text-[var(--text-primary)] mb-4 leading-[1.1]">
                 Pre-Submit Check
               </h3>
@@ -221,23 +219,24 @@ export default function Home({ user, signIn, signOut }) {
 
             {/* Heatmap (Span 7) */}
             <SpotlightCard className="md:col-span-7 p-8 md:p-10 min-h-[400px] flex flex-col justify-center overflow-hidden">
-              <div className="w-12 h-12 rounded-xl bg-[var(--accent-orange-dim)] border border-[color-mix(in_srgb,var(--accent-orange)_30%,transparent)] flex items-center justify-center mb-8">
-                <Activity size={24} className="text-[var(--accent-orange)]" />
-              </div>
+
               <h3 className="font-display text-[28px] font-bold text-[var(--text-primary)] mb-4 leading-[1.1]">
                 Track what gets merged.
               </h3>
               <p className="text-[16px] text-[var(--text-muted)] mb-8">
                 Stop guessing what maintainers want. We analyze merge histories to show you exactly when and what gets merged.
               </p>
-              <div className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-4 md:p-6 overflow-x-auto shadow-inner flex items-center justify-center mask-fade-edges">
-                <div className="min-w-[600px] scale-[0.85] origin-left md:scale-100 md:origin-center">
-                  <Heatmap 
-                    data={seedActivity.heatmap} 
-                    totalIssues={133} 
-                    activeDays={99} 
-                    isDemoMode={false} 
-                  />
+              <div className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-4 md:p-6 shadow-inner">
+                <div className="flex flex-wrap gap-1">
+                  {Array.from({ length: 182 }).map((_, i) => {
+                    const intensity = [0, 0, 0, 1, 1, 2, 3][Math.floor(Math.random() * 7)];
+                    const colors = ['bg-[var(--border)]', 'bg-[var(--accent-green)]/30', 'bg-[var(--accent-green)]/60', 'bg-[var(--accent-green)]'];
+                    return <div key={i} className={`w-3 h-3 rounded-sm ${colors[intensity]}`} />;
+                  })}
+                </div>
+                <div className="flex justify-between mt-3">
+                  <span className="font-mono text-[11px] text-[var(--text-muted)]">133 contributions this year</span>
+                  <span className="font-mono text-[11px] text-[var(--text-muted)]">99 active days</span>
                 </div>
               </div>
             </SpotlightCard>
@@ -245,17 +244,15 @@ export default function Home({ user, signIn, signOut }) {
             {/* Seamless Extension (Span 12) */}
             <SpotlightCard className="md:col-span-12 p-8 md:p-10 min-h-[250px] flex flex-col justify-center relative overflow-hidden group">
               <div className="relative z-10 w-full md:w-[60%]">
-                <div className="w-12 h-12 rounded-xl bg-[var(--bg-selected)] border border-[var(--border-selected)] flex items-center justify-center mb-6">
-                  <Code size={24} className="text-[var(--accent-blue)]" />
-                </div>
+
                 <h3 className="font-display text-[32px] font-bold text-[var(--text-primary)] mb-4 leading-[1.1]">
                   Zero-Friction Extension
                 </h3>
                 <p className="text-[16px] text-[var(--text-muted)] mb-6 max-w-[600px]">
                   The FirstMerge Chrome extension automatically injects the AI analysis panel directly into your GitHub PR timeline. No tabs to switch. No context switching.
                 </p>
-                <button className="text-[14px] font-bold text-[var(--accent-blue)] flex items-center gap-2 group-hover:gap-3 transition-all cursor-pointer">
-                  Get the Extension <ArrowRight size={16} />
+                <button className="text-[18px] font-bold text-[var(--accent-blue)] flex items-center gap-2 group-hover:gap-3 transition-all cursor-pointer">
+                  Get the Extension <ArrowRight size={20} />
                 </button>
               </div>
               
@@ -267,16 +264,16 @@ export default function Home({ user, signIn, signOut }) {
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 1, delay: 0.2, type: "spring", bounce: 0.4 }}
               >
-                <div className="w-full h-full bg-[var(--bg-primary)] border border-[var(--border)] rounded-l-2xl shadow-2xl p-6 opacity-50 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500 flex flex-col">
+                <div className="w-full h-full bg-[var(--bg-primary)] border border-[var(--border)] rounded-l-2xl shadow-2xl p-6 opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500 flex flex-col">
                   <div className="w-full h-8 flex items-center gap-2 border-b border-[var(--border)] mb-4">
-                    <div className="w-3 h-3 rounded-full bg-[var(--border)]" />
-                    <div className="w-3 h-3 rounded-full bg-[var(--border)]" />
-                    <div className="w-3 h-3 rounded-full bg-[var(--border)]" />
+                    <div className="w-3 h-3 rounded-full bg-[var(--border-selected)]" />
+                    <div className="w-3 h-3 rounded-full bg-[var(--border-selected)]" />
+                    <div className="w-3 h-3 rounded-full bg-[var(--border-selected)]" />
                   </div>
                   <div className="space-y-4 flex-1">
-                    <div className="w-[80%] h-4 bg-[var(--border)] rounded-full" />
-                    <div className="w-[60%] h-4 bg-[var(--border)] rounded-full" />
-                    <div className="w-full h-20 bg-[var(--accent-blue-dim)] rounded-lg border border-[var(--border-selected)] mt-6" />
+                    <div className="w-[80%] h-4 bg-[var(--border-selected)] rounded-full" />
+                    <div className="w-[60%] h-4 bg-[var(--border-selected)] rounded-full" />
+                    <div className="w-full h-20 bg-[var(--accent-blue-dim)] rounded-lg border border-[var(--accent-blue)] opacity-50 mt-6" />
                   </div>
                 </div>
               </motion.div>
