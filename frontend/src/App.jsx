@@ -38,14 +38,27 @@ export default function App() {
 
   useEffect(() => {
     if (user && !loading && window.location.pathname !== '/onboarding') {
-      // Check if user has a complete profile (e.g., interests are set)
-      supabase.from('users').select('interests').eq('id', user.id).single()
-        .then(({ data }) => {
-          if (!data || !data.interests || data.interests.length === 0) {
-            navigate('/onboarding')
+      const checkProfile = async () => {
+        try {
+          const { data: { session } } = await supabase.auth.getSession()
+          if (!session?.access_token) return
+          
+          const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'
+          const res = await fetch(`${BACKEND_URL}/api/user/profile`, {
+            headers: { 'Authorization': `Bearer ${session.access_token}` }
+          })
+          
+          if (res.ok) {
+            const data = await res.json()
+            if (!data || !data.interests || data.interests.length === 0) {
+              navigate('/onboarding')
+            }
           }
-        })
-        .catch(err => console.error("Error checking user profile:", err))
+        } catch (err) {
+          console.error("Error checking user profile:", err)
+        }
+      }
+      checkProfile()
     }
   }, [user, loading, navigate])
 

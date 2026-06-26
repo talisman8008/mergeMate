@@ -119,6 +119,29 @@ router.get('/dashboard', requireAuth, async (req, res) => {
   }
 })
 
+// ── GET /api/user/profile ───────────────────────────────────────────────────
+
+router.get('/profile', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.id
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle()
+
+    if (error) {
+      console.error('[user] GET profile failed:', error.message)
+      return res.status(500).json({ error: error.message })
+    }
+
+    return res.json(data || {})
+  } catch (err) {
+    console.error('[user] GET /profile failed:', err.message)
+    return res.status(500).json({ error: err.message || 'Internal server error' })
+  }
+})
+
 // ── POST /api/user/profile ──────────────────────────────────────────────────
 
 router.post('/profile', requireAuth, async (req, res) => {
