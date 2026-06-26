@@ -117,10 +117,10 @@ export default function Home({ user, signIn, signOut }) {
                     <div className="relative group">
                       <div className="absolute -inset-1 bg-gradient-to-r from-[var(--accent-blue)] to-[var(--accent-purple)] rounded-[8px] blur opacity-25 group-hover:opacity-60 transition duration-500"></div>
                       <button
-                        onClick={() => navigate('/dashboard')}
+                        onClick={() => navigate('/explore')}
                         className="relative bg-[var(--text-primary)] text-[var(--bg-primary)] hover:scale-105 font-display text-[16px] font-bold px-8 py-4 rounded-[6px] transition-all duration-300 shadow-xl flex items-center justify-center gap-3 w-full sm:w-auto"
                       >
-                        Go to Dashboard
+                        Explore Issues
                         <ArrowRight size={18} />
                       </button>
                     </div>
