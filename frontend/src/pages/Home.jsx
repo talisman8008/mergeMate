@@ -124,7 +124,7 @@ export default function Home({ user, signIn, signOut }) {
                 </h1>
                 
                 <FadeIn delay={0.4}>
-                  <p className="font-display text-[18px] md:text-[22px] text-[var(--text-faint)] max-w-[750px] mb-12 leading-relaxed">
+                  <p className="font-display text-[18px] md:text-[22px] text-[var(--text-muted)] max-w-[750px] mb-12 leading-relaxed">
                     Stop wasting days on ignored pull requests. FirstMerge scores repository friendliness, generates step-by-step AI roadmaps, and pre-reviews your code before you even open a PR.
                   </p>
                 </FadeIn>
@@ -268,8 +268,11 @@ export default function Home({ user, signIn, signOut }) {
                 <p className="text-[16px] text-[var(--text-muted)] mb-6 max-w-[600px]">
                   The FirstMerge Chrome extension automatically injects the AI analysis panel directly into your GitHub PR timeline. No tabs to switch. No context switching.
                 </p>
-                <button className="text-[18px] font-bold text-[var(--accent-blue)] flex items-center gap-2 group-hover:gap-3 transition-all cursor-pointer">
-                  Get the Extension <ArrowRight size={20} />
+                <button 
+                  onClick={() => navigate('/prcheck')}
+                  className="text-[18px] font-bold text-[var(--accent-blue)] flex items-center gap-2 group-hover:gap-3 transition-all cursor-pointer focus:outline-none"
+                >
+                  See how to use it <ArrowRight size={20} />
                 </button>
               </div>
               

@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 const GitHubIcon = () => (
@@ -23,6 +24,27 @@ const DiscordIcon = () => (
 );
 
 export default function Footer() {
+  const [theme, setTheme] = useState(
+    typeof document !== 'undefined' && document.documentElement.classList.contains('light') ? 'light' : 'dark'
+  );
+
+  useEffect(() => {
+    // Sync the initial theme immediately on mount in case we missed Navbar's setup
+    const currentTheme = document.documentElement.classList.contains('light') ? 'light' : 'dark';
+    setTheme(currentTheme);
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          setTheme(document.documentElement.classList.contains('light') ? 'light' : 'dark');
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <footer className="w-full bg-[var(--bg-primary)] border-t border-[var(--border)] pt-16 pb-8 relative z-20">
       <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8 mb-16">
@@ -31,7 +53,7 @@ export default function Footer() {
         <div className="col-span-1 md:col-span-2">
           <Link to="/" className="flex items-center gap-2 mb-4">
             <img
-              src="/logos/firstmerge-logo-dark-bg.svg"
+              src={theme === 'light' ? "/logos/firstmerge-logo.svg" : "/logos/firstmerge-logo-dark-bg.svg"}
               alt="FirstMerge Logo"
               className="h-7 w-auto object-contain"
             />
