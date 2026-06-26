@@ -10,6 +10,7 @@ import IssueDetail from './pages/IssueDetail.jsx'
 import PRCheck from './pages/PRCheck.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import Onboarding from './pages/Onboarding.jsx'
+import NotFound from './pages/NotFound.jsx'
 import CustomCursor from './components/CustomCursor.jsx'
 
 export default function App() {
@@ -51,6 +52,7 @@ export default function App() {
         <Route path="/prcheck" element={<PRCheck user={user} signIn={signIn} signOut={signOut} />} />
         <Route path="/dashboard" element={<Dashboard user={user} signIn={signIn} signOut={signOut} />} />
         <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="*" element={<NotFound user={user} signIn={signIn} signOut={signOut} />} />
       </Routes>
     </div>
   )
