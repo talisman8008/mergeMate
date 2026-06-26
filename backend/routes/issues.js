@@ -90,8 +90,8 @@ router.get('/', async (req, res) => {
           const sliced = filteredFullEnriched.slice(startIndex, startIndex + itemsPerPage)
           
           return res.json({
-            data: sliced,
-            total_count: filteredFullEnriched.length,
+            data: injectDemoIssue(sliced, itemsPerPage),
+            total_count: Math.max(1, filteredFullEnriched.length),
             page: page,
             has_more: startIndex + itemsPerPage < filteredFullEnriched.length,
             error: null,
@@ -119,7 +119,7 @@ router.get('/', async (req, res) => {
     }
 
     if (!rawIssues.length) {
-      return res.json({ data: [], total_count: 0, page, has_more: false, error: null })
+      return res.json({ data: injectDemoIssue([]), total_count: page === 1 ? 1 : 0, page, has_more: false, error: null })
     }
 
     // Deduplication — allow up to 2 issues per repo per language selected,
@@ -238,15 +238,42 @@ router.get('/', async (req, res) => {
         if (error) console.warn('[issues] issues_cache write failed:', error.message)
       })
 
+    // Helper to inject demo issue on page 1
+    function injectDemoIssue(currentSlice) {
+      if (page !== 1) return currentSlice;
+      const demoIssue = {
+        id: 99999999,
+        title: 'Add an about section to the homepage',
+        url: 'https://github.com/talisman8008/demo/issues/1',
+        html_url: 'https://github.com/talisman8008/demo/issues/1',
+        repo_name: 'talisman8008/demo',
+        repository_url: 'https://api.github.com/repos/talisman8008/demo',
+        created_at: new Date().toISOString(),
+        comments: 0,
+        number: 1,
+        language: 'JavaScript',
+        stars: 125,
+        labels: ['good first issue', 'help wanted'],
+        friendliness_score: 98,
+        score_breakdown: { recent_merges: 40, response_time: 30, active_discussions: 18, PR_acceptance_rate: 10 },
+        fallbacks_used: [],
+        open_pr_count: 0,
+        liveness_status: 'ALIVE',
+        liveness_cached: false,
+        score_cached: false
+      };
+      return [demoIssue, ...currentSlice.filter(i => i.html_url !== demoIssue.html_url)].slice(0, 10);
+    }
+
     // 4. Pagination slicing and minScore filter
     const filteredEnriched = enriched.filter(issue => (issue.friendliness_score ?? 0) >= minScore)
     const itemsPerPage = 10
     const startIndex = (page - 1) * itemsPerPage
-    const sliced = filteredEnriched.slice(startIndex, startIndex + itemsPerPage)
+    let sliced = filteredEnriched.slice(startIndex, startIndex + itemsPerPage)
 
     return res.json({ 
-      data: sliced, 
-      total_count: filteredEnriched.length,
+      data: injectDemoIssue(sliced), 
+      total_count: Math.max(1, filteredEnriched.length),
       page: page,
       has_more: startIndex + itemsPerPage < filteredEnriched.length,
       error: null 

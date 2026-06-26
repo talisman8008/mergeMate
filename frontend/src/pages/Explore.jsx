@@ -261,7 +261,19 @@ export default function Explore() {
               <>
                 <div className={viewMode === 'grid' ? "grid grid-cols-1 xl:grid-cols-2 gap-4" : "flex flex-col gap-4"}>
                   {issues.map((issue) => (
-                    <IssueCard key={`${issue.repo_name}-${issue.number}-${issue.id}`} issue={issue} viewMode={viewMode} />
+                    <div 
+                      key={`${issue.repo_name}-${issue.number}-${issue.id}`}
+                      className="flex flex-col"
+                      onClickCapture={(e) => {
+                        if (!user) {
+                          e.stopPropagation()
+                          e.preventDefault()
+                          signIn()
+                        }
+                      }}
+                    >
+                      <IssueCard issue={issue} viewMode={viewMode} />
+                    </div>
                   ))}
                 </div>
 

@@ -33,7 +33,7 @@ function parseLinkedIssueNumber(body) {
 
 async function fetchRecentClosedPRs(owner, repo) {
   try {
-    const prs = await getRepoPRs(owner, repo, 'closed', 5)
+    const prs = await getRepoPRs(owner, repo, 5)
     return prs.map((pr) => ({
       title: pr.title || '',
       merged: pr.merged_at !== null,
