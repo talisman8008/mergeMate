@@ -6,6 +6,7 @@ import ScrollStack, { ScrollStackItem } from '../components/ScrollStack.jsx'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeSanitize from 'rehype-sanitize'
+import rehypeRaw from 'rehype-raw'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'
 
@@ -189,7 +190,7 @@ export default function IssueDetail({ user, signIn, signOut }) {
                         {details.issue.body ? (
                           <ReactMarkdown 
                             remarkPlugins={[remarkGfm]}
-                            rehypePlugins={[rehypeSanitize]}
+                            rehypePlugins={[rehypeRaw, rehypeSanitize]}
                             components={{
                               h1: ({node, ...props}) => <h1 className="text-2xl font-bold text-[var(--text-primary)] mt-6 mb-4" {...props} />,
                               h2: ({node, ...props}) => <h2 className="text-xl font-bold text-[var(--text-primary)] mt-5 mb-3" {...props} />,

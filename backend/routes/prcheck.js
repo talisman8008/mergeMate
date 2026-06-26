@@ -11,42 +11,12 @@
  */
 
 import { Router } from 'express'
-import { createClient } from '@supabase/supabase-js'
 
 import { fetchPRData, fetchIssueData } from '../services/githubPRService.js'
 import { analyzeContribution } from '../services/geminiService.js'
+import requireAuth from '../middleware/auth.js'
 
 const router = Router()
-
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY,
-)
-
-// ── Auth middleware ───────────────────────────────────────────────────────────
-
-async function requireAuth(req, res, next) {
-  try {
-    const authHeader = req.headers.authorization
-    if (!authHeader?.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Missing or invalid Authorization header' })
-    }
-
-    const token = authHeader.slice(7) // strip "Bearer "
-
-    const { data: { user }, error } = await supabase.auth.getUser(token)
-
-    if (error || !user) {
-      return res.status(401).json({ error: 'Invalid or expired token' })
-    }
-
-    req.user = user
-    next()
-  } catch (err) {
-    console.error('[prcheck] Auth middleware error:', err.message)
-    return res.status(401).json({ error: 'Authentication failed' })
-  }
-}
 
 // ── URL parsers ───────────────────────────────────────────────────────────────
 
@@ -66,7 +36,8 @@ function parseIssueUrl(issueUrl) {
 
 function parseCompareUrl(compareUrl) {
   // e.g. https://github.com/owner/repo/compare/main...branch
-  const match = compareUrl?.match(/github\.com\/([^/]+)\/([^/]+)\/compare\/(.+)/)
+  const cleanUrl = compareUrl?.split('?')[0].split('#')[0]
+  const match = cleanUrl?.match(/^https:\/\/github\.com\/([^/]+)\/([^/]+)\/compare\/(.+)$/)
   if (!match) return null
   return { owner: match[1], repo: match[2], branchCompare: match[3] }
 }
@@ -131,17 +102,21 @@ router.post('/compare', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Invalid compare URL. Format: https://github.com/owner/repo/compare/...' })
     }
 
-    const { owner, repo } = parsed
+    const { owner, repo, branchCompare } = parsed
+
+    if (!/^[a-zA-Z0-9._-]+$/.test(owner) || !/^[a-zA-Z0-9._-]+$/.test(repo)) {
+      return res.status(400).json({ error: 'Invalid owner or repo name' })
+    }
 
     // Fetch the diff directly from GitHub's web view
-    const cleanUrl = compareUrl.split('?')[0].split('#')[0]
+    const diffUrl = `https://github.com/${owner}/${repo}/compare/${branchCompare}.diff`
     
     const headers = process.env.GITHUB_TOKEN ? {
       Authorization: `token ${process.env.GITHUB_TOKEN}`,
       Accept: 'application/vnd.github.v3.diff'
     } : {}
     
-    const diffResponse = await fetch(`${cleanUrl}.diff`, { headers })
+    const diffResponse = await fetch(diffUrl, { headers })
     
     if (!diffResponse.ok) {
       return res.status(404).json({ error: `Could not fetch diff. GitHub returned ${diffResponse.status}. Make sure the branch has commits and the backend has access to it.` })

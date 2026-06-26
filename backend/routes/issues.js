@@ -240,7 +240,7 @@ router.get('/', async (req, res) => {
 
     // Helper to inject demo issue on page 1
     function injectDemoIssue(currentSlice) {
-      if (page !== 1) return currentSlice;
+      if (page !== 1 || process.env.NODE_ENV === 'production') return currentSlice;
       const demoIssue = {
         id: 99999999,
         title: 'Add an about section to the homepage',

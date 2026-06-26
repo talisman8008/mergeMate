@@ -5,7 +5,7 @@ import supabase from '../lib/supabase.js'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'
 
-export default function IssueCard({ issue, viewMode = 'grid' }) {
+export default function IssueCard({ issue, viewMode = 'grid', user, signIn }) {
   const navigate = useNavigate()
   const {
     id,
@@ -23,10 +23,19 @@ export default function IssueCard({ issue, viewMode = 'grid' }) {
 
   const [savingStatus, setSavingStatus] = useState('idle')
 
-  const handleRowClick = () => {
+  const issueHref = (user && repo_name && number) 
+    ? `/issue/${repo_name.split('/')[0]}/${repo_name.split('/')[1]}/${number}` 
+    : undefined;
+
+  const handleRowClick = (e) => {
+    if (!user && signIn) {
+      e.preventDefault();
+      signIn();
+      return;
+    }
     if (repo_name && number) {
-      const [owner, repo] = repo_name.split('/')
-      navigate(`/issue/${owner}/${repo}/${number}`)
+      e.preventDefault();
+      navigate(issueHref);
     }
   }
 
@@ -91,9 +100,10 @@ export default function IssueCard({ issue, viewMode = 'grid' }) {
 
   if (viewMode === 'list') {
     return (
-      <div 
+      <a 
+        href={issueHref}
         onClick={handleRowClick}
-        className={`bg-[var(--bg-card)] border ${id === 99999999 ? 'border-yellow-500' : 'border-[var(--border)]'} rounded-lg p-3 hover:border-[var(--border-hover)] hover:bg-[var(--bg-card-hover)] transition-all duration-150 cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4`}
+        className={`bg-[var(--bg-card)] border ${id === 99999999 ? 'border-yellow-500' : 'border-[var(--border)]'} rounded-lg p-3 hover:border-[var(--border-hover)] hover:bg-[var(--bg-card-hover)] transition-all duration-150 cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4 block`}
       >
         {/* Left: Avatar + Repo Info */}
         <div className="flex gap-3 items-center md:w-[220px] flex-shrink-0">
@@ -168,14 +178,15 @@ export default function IssueCard({ issue, viewMode = 'grid' }) {
             </span>
           </div>
         </div>
-      </div>
+      </a>
     )
   }
 
   return (
-    <div 
+    <a 
+      href={issueHref}
       onClick={handleRowClick}
-      className={`bg-[var(--bg-card)] border ${id === 99999999 ? 'border-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.2)]' : 'border-[var(--border)]'} rounded-lg p-4 hover:border-[var(--border-hover)] hover:bg-[var(--bg-card-hover)] transition-all duration-150 cursor-pointer flex flex-col min-h-[180px] relative`}
+      className={`bg-[var(--bg-card)] border ${id === 99999999 ? 'border-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.2)]' : 'border-[var(--border)]'} rounded-lg p-4 hover:border-[var(--border-hover)] hover:bg-[var(--bg-card-hover)] transition-all duration-150 cursor-pointer flex flex-col min-h-[180px] relative block`}
     >
       {id === 99999999 && (
         <span className="absolute -top-2.5 right-4 bg-yellow-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Demo</span>
@@ -266,6 +277,6 @@ export default function IssueCard({ issue, viewMode = 'grid' }) {
           </span>
         </div>
       )}
-    </div>
+    </a>
   )
 }

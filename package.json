@@ -1,0 +1,8 @@
+{
+  "name": "mergemate-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "npx concurrently \"npm run dev --prefix frontend\" \"npm start --prefix backend\""
+  }
+}

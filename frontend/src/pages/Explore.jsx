@@ -392,15 +392,8 @@ export default function Explore() {
                     <div 
                       key={`${issue.repo_name}-${issue.number}-${issue.id}`}
                       className="flex flex-col"
-                      onClickCapture={(e) => {
-                        if (!user) {
-                          e.stopPropagation()
-                          e.preventDefault()
-                          signIn()
-                        }
-                      }}
                     >
-                      <IssueCard issue={issue} viewMode={viewMode} />
+                      <IssueCard issue={issue} viewMode={viewMode} user={user} signIn={signIn} />
                     </div>
                   ))}
                 </div>

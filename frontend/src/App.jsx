@@ -50,8 +50,12 @@ export default function App() {
           
           if (res.ok) {
             const data = await res.json()
-            if (!data || !data.interests || data.interests.length === 0) {
+            const hasCompletedOnboarding = data && data.interests && data.interests.length > 0
+            
+            if (!hasCompletedOnboarding) {
               navigate('/onboarding')
+            } else if (window.location.pathname === '/') {
+              navigate('/explore')
             }
           }
         } catch (err) {

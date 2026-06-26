@@ -19,7 +19,7 @@
     "scripting"
   ],
   "host_permissions": [
-    "http://localhost:3000/*",
+    "https://your-backend.up.railway.app/*",
     "https://github.com/*",
     "https://*.supabase.co/*"
   ],
@@ -33,7 +33,6 @@
     },
     {
       "matches": [
-        "http://localhost:5173/*",
         "https://your-frontend.vercel.app/*"
       ],
       "js": ["authSync.js"]

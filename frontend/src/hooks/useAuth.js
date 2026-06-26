@@ -20,7 +20,7 @@ export default function useAuth() {
           refreshToken: session.refresh_token,
           supabaseUrl: import.meta.env.VITE_SUPABASE_URL,
           supabaseKey: import.meta.env.VITE_SUPABASE_ANON_KEY
-        }, '*')
+        }, window.location.origin)
       }
     })
 
@@ -36,9 +36,9 @@ export default function useAuth() {
           refreshToken: session.refresh_token,
           supabaseUrl: import.meta.env.VITE_SUPABASE_URL,
           supabaseKey: import.meta.env.VITE_SUPABASE_ANON_KEY
-        }, '*')
+        }, window.location.origin)
       } else if (event === 'SIGNED_OUT') {
-        window.postMessage({ type: 'FM_AUTH_LOGOUT' }, '*')
+        window.postMessage({ type: 'FM_AUTH_LOGOUT' }, window.location.origin)
       }
     })
 
@@ -50,9 +50,6 @@ export default function useAuth() {
       provider: 'github',
       options: {
         redirectTo: window.location.origin,
-        queryParams: {
-          prompt: 'consent',
-        },
       },
     })
   }

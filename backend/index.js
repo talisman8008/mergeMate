@@ -14,7 +14,6 @@ const PORT = process.env.PORT || 3000;
 
 // ── Middleware ────────────────────────────────────────────────────────────────
 const allowedOrigins = [
-  'http://localhost:5173',
   'https://github.com',
   process.env.ALLOWED_ORIGIN
 ].filter(Boolean);
@@ -23,6 +22,7 @@ app.use(cors({
   origin: allowedOrigins,
   credentials: true
 }));
+app.use('/api/prcheck', express.json({ limit: '500kb' }));
 app.use(express.json({ limit: '10kb' }));
 app.use('/api/prcheck', rateLimit({ windowMs: 15 * 60 * 1000, max: 30 }))
 app.use('/api/issues', rateLimit({ windowMs: 60 * 1000, max: 20 }))
