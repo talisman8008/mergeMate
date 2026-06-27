@@ -84,7 +84,7 @@ export default function App() {
         <Route path="/prcheck" element={<PRCheck user={user} signIn={signIn} signOut={signOut} />} />
         <Route path="/dashboard" element={<Dashboard user={user} signIn={signIn} signOut={signOut} />} />
         <Route path="/onboarding" element={<Onboarding />} />
-        <Route path="*" element={<NotFound user={user} signIn={signIn} signOut={signOut} />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </div>
   )
