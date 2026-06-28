@@ -36,29 +36,9 @@ function createFirstMergeBanner() {
       banner.style.position = 'relative';
       const ftue = document.createElement('div');
       ftue.id = 'fm-extension-ftue';
-      ftue.style.cssText = `
-        position: absolute;
-        top: -15px;
-        right: -10px;
-        transform: translateY(-100%);
-        background-color: #6B71B8;
-        color: white;
-        padding: 12px 16px;
-        border-radius: 8px;
-        font-family: 'DM Sans', -apple-system, sans-serif;
-        font-size: 13px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        z-index: 10000;
-        width: 280px;
-        border: 1px solid rgba(255,255,255,0.2);
-      `;
+      ftue.style.cssText = 'position: absolute; top: -15px; right: -10px; transform: translateY(-100%); background-color: #6B71B8; color: white; padding: 12px 16px; border-radius: 8px; font-family: sans-serif; font-size: 13px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 10000; width: 280px; border: 1px solid rgba(255,255,255,0.2);';
 
-      ftue.innerHTML = `
-        <div style="font-weight: bold; margin-bottom: 6px; font-size: 14px;">FirstMerge Auto-Analysis ✨</div>
-        <div style="margin-bottom: 12px; line-height: 1.4;">We will automatically analyze your code here before you submit to ensure it's high quality and linked to an issue.</div>
-        <button id="fm-ftue-dismiss" style="background: rgba(0,0,0,0.2); border: none; color: white; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.4)'" onmouseout="this.style.background='rgba(0,0,0,0.2)'">Got it!</button>
-        <div style="position: absolute; bottom: -6px; right: 24px; width: 12px; height: 12px; background: #6B71B8; transform: rotate(45deg); border-right: 1px solid rgba(255,255,255,0.2); border-bottom: 1px solid rgba(255,255,255,0.2);"></div>
-      `;
+      ftue.innerHTML = '<div style="font-weight: bold; margin-bottom: 6px; font-size: 14px;">FirstMerge Auto-Analysis </div><div style="margin-bottom: 12px; line-height: 1.4;">We will automatically analyze your code here before you submit to ensure it is high quality and linked to an issue.</div><button id="fm-ftue-dismiss" style="background: rgba(0,0,0,0.2); border: none; color: white; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; transition: background 0.2s;">Got it!</button><div style="position: absolute; bottom: -6px; right: 24px; width: 12px; height: 12px; background: #6B71B8; transform: rotate(45deg); border-right: 1px solid rgba(255,255,255,0.2); border-bottom: 1px solid rgba(255,255,255,0.2);"></div>';
       
       banner.appendChild(ftue);
 
