@@ -130,6 +130,13 @@ const dashboardTourSteps = [
     disableBeacon: true,
   },
   {
+    target: '#tour-share-profile',
+    content: "Show off your open-source impact! Generate a beautiful, shareable trading card summarizing your PRs, top languages, and total commits to post on LinkedIn or Twitter.",
+    title: "Share Your Profile",
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
     target: '#tour-issue-types',
     content: "See what kind of issues you've been solving. As you tackle more complex problems, this breakdown will evolve.",
     title: "Issue Types",
@@ -494,7 +501,7 @@ export default function Dashboard({ user, signIn, signOut }) {
             <Link to="/onboarding" className="w-full flex items-center justify-center gap-2 bg-[var(--bg-card-hover)] hover:bg-[var(--border)] text-[var(--text-primary)] border border-[var(--border)] py-2 rounded-md transition-colors text-sm font-medium">
               Update Preferences
             </Link>
-            <button onClick={() => setIsShareModalOpen(true)} className="w-full flex items-center justify-center gap-2 bg-[var(--bg-card-hover)] hover:bg-[var(--border)] text-[var(--text-primary)] border border-[var(--border)] py-2 rounded-md transition-colors text-sm font-medium">
+            <button id="tour-share-profile" onClick={() => setIsShareModalOpen(true)} className="w-full flex items-center justify-center gap-2 bg-[var(--bg-card-hover)] hover:bg-[var(--border)] text-[var(--text-primary)] border border-[var(--border)] py-2 rounded-md transition-colors text-sm font-medium">
               Share Profile 🔗
             </button>
           </div>
