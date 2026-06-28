@@ -399,7 +399,7 @@ export default function Home({ user, signIn, signOut }) {
             <SpotlightCard className="p-8 flex flex-col min-h-[350px] border-dashed border-[var(--border)] relative overflow-hidden">
               <div className="w-fit mb-4 bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">Coming Soon</div>
               <h3 className="font-display text-[24px] font-bold text-[var(--text-primary)] mb-2">Recruiter Portal</h3>
-              <div className="font-display text-[32px] font-bold text-[var(--text-primary)] mb-4">$99<span className="text-[16px] text-[var(--text-muted)] font-normal tracking-normal">/month</span></div>
+              <div className="font-display text-[32px] font-bold text-[var(--text-primary)] mb-4">₹99<span className="text-[16px] text-[var(--text-muted)] font-normal tracking-normal">/month</span></div>
               <p className="text-[15px] text-[var(--text-muted)] mb-8 flex-1">
                 Search verified contributors by language, PR count, and Friendliness Score.
               </p>
