@@ -18,7 +18,7 @@ const CommitNode = ({ commit, drawnY }) => {
         r={commit.isMerge ? "18" : "14"}
         fill="var(--bg-primary)"
         stroke={commit.color}
-        strokeWidth="6"
+        strokeWidth="8"
         filter="url(#premiumGlow)"
         style={{ scale, transformOrigin: `${commit.cx}px ${commit.cy}px` }}
       />
@@ -30,7 +30,7 @@ const CommitNode = ({ commit, drawnY }) => {
         r={commit.isMerge ? "8" : "6"}
         fill={commit.isMerge ? "var(--bg-primary)" : commit.color}
         stroke={commit.isMerge ? commit.color : "none"}
-        strokeWidth={commit.isMerge ? "4" : "0"}
+        strokeWidth={commit.isMerge ? "6" : "0"}
         style={{ scale, transformOrigin: `${commit.cx}px ${commit.cy}px` }}
       />
       
@@ -95,7 +95,7 @@ export default function MergeField({ drawnY, className = "" }) {
   return (
     <div className={`absolute top-0 w-full h-full z-0 pointer-events-none flex justify-center overflow-hidden ${className}`}>
       <svg
-        className="absolute w-[1200px] h-[5500px] top-[0px]"
+        className="absolute w-[1200px] h-[5500px] top-[0px] left-1/2 -translate-x-1/2 origin-top max-md:scale-[0.55] lg:scale-100 transition-transform"
         viewBox="0 0 1200 5500"
         fill="none"
       >
@@ -119,22 +119,27 @@ export default function MergeField({ drawnY, className = "" }) {
           </linearGradient>
 
           <filter id="premiumGlow" filterUnits="userSpaceOnUse" x="-500" y="-500" width="2200" height="6500">
-            <feGaussianBlur stdDeviation="8" result="blur" />
+            <feGaussianBlur stdDeviation="12" result="blur1" />
+            <feGaussianBlur stdDeviation="24" result="blur2" />
+            <feMerge result="blur">
+              <feMergeNode in="blur2" />
+              <feMergeNode in="blur1" />
+            </feMerge>
             <feComposite in="SourceGraphic" in2="blur" operator="over" />
           </filter>
         </defs>
 
         {/* BACKGROUND SHADOW TRACKS */}
-        <path d={pathMain} stroke="rgba(0,0,0,0.03)" strokeWidth="8" strokeLinecap="round" />
-        <path d={pathBlue} stroke="rgba(0,0,0,0.03)" strokeWidth="8" strokeLinecap="round" />
-        <path d={pathGreen} stroke="rgba(0,0,0,0.03)" strokeWidth="8" strokeLinecap="round" />
-        <path d={pathEnergy} stroke="rgba(0,0,0,0.03)" strokeWidth="8" strokeLinecap="round" />
+        <path d={pathMain} stroke="rgba(0,0,0,0.05)" strokeWidth="12" strokeLinecap="round" />
+        <path d={pathBlue} stroke="rgba(0,0,0,0.05)" strokeWidth="12" strokeLinecap="round" />
+        <path d={pathGreen} stroke="rgba(0,0,0,0.05)" strokeWidth="12" strokeLinecap="round" />
+        <path d={pathEnergy} stroke="rgba(0,0,0,0.05)" strokeWidth="12" strokeLinecap="round" />
 
         {/* ANIMATED TRACKS */}
         <motion.path
           d={pathMain}
           stroke="url(#purpleGrad)"
-          strokeWidth="3"
+          strokeWidth="6"
           strokeLinecap="round"
           filter="url(#premiumGlow)"
           style={{ pathLength: pathLengthMain }}
@@ -143,7 +148,7 @@ export default function MergeField({ drawnY, className = "" }) {
         <motion.path
           d={pathBlue}
           stroke="url(#blueGrad)"
-          strokeWidth="3"
+          strokeWidth="6"
           strokeLinecap="round"
           filter="url(#premiumGlow)"
           style={{ pathLength: pathLengthBlue }}
@@ -152,7 +157,7 @@ export default function MergeField({ drawnY, className = "" }) {
         <motion.path
           d={pathGreen}
           stroke="url(#greenGrad)"
-          strokeWidth="3"
+          strokeWidth="6"
           strokeLinecap="round"
           filter="url(#premiumGlow)"
           style={{ pathLength: pathLengthGreen }}
@@ -161,7 +166,7 @@ export default function MergeField({ drawnY, className = "" }) {
         <motion.path
           d={pathEnergy}
           stroke="url(#energyGrad)"
-          strokeWidth="3"
+          strokeWidth="6"
           strokeLinecap="round"
           filter="url(#premiumGlow)"
           style={{ pathLength: pathLengthEnergy }}

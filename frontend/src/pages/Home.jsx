@@ -40,7 +40,7 @@ const SignalRow = ({ name, percent, score, color, delay }) => {
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay }}
     >
-      <div className="w-[180px] md:w-[280px] font-mono text-[12px] md:text-[14px] text-[var(--text-primary)] whitespace-nowrap overflow-hidden text-ellipsis">{name}</div>
+      <div className="w-[110px] sm:w-[180px] md:w-[280px] font-mono text-[11px] sm:text-[12px] md:text-[14px] text-[var(--text-primary)] whitespace-nowrap overflow-hidden text-ellipsis">{name}</div>
       <div className="flex-1 h-[2px] bg-[var(--border)] relative overflow-hidden rounded-full">
         <motion.div 
           className="absolute top-0 left-0 h-full"
@@ -68,7 +68,7 @@ export default function Home({ user, signIn, signOut }) {
   const loadY = useMotionValue(0)
   
   useEffect(() => {
-    animate(loadY, 650, { duration: 2.0, ease: "easeOut" })
+    animate(loadY, 1500, { duration: 2.5, ease: "easeOut" })
   }, [loadY])
 
   // 3. Combine them: take whichever is larger (auto-load or user scroll)

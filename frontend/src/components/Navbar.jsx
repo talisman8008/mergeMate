@@ -41,9 +41,25 @@ const LogOutIcon = () => (
   </svg>
 )
 
+const MenuIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="3" y1="12" x2="21" y2="12"></line>
+    <line x1="3" y1="6" x2="21" y2="6"></line>
+    <line x1="3" y1="18" x2="21" y2="18"></line>
+  </svg>
+)
+
+const CloseIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18"></line>
+    <line x1="6" y1="6" x2="18" y2="18"></line>
+  </svg>
+)
+
 export default function Navbar({ user, signIn, signOut }) {
   const [theme, setTheme] = useState('dark')
   const [scrolled, setScrolled] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const location = useLocation()
   const isLanding = location.pathname === '/'
 
@@ -66,6 +82,11 @@ export default function Navbar({ user, signIn, signOut }) {
     // Run once to set initial state
     handleScroll()
     return () => window.removeEventListener('scroll', handleScroll)
+  }, [location.pathname])
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsMobileMenuOpen(false)
   }, [location.pathname])
 
   const toggleTheme = () => {
@@ -116,7 +137,7 @@ export default function Navbar({ user, signIn, signOut }) {
 
           {/* Nav links — only when logged in */}
           {user && (
-            <div className="flex items-center gap-1.5">
+            <div className="hidden md:flex items-center gap-1.5">
               <NavLink to="/explore" id="nav-explore" className={getNavLinkClass}>
                 Explore
               </NavLink>
@@ -133,20 +154,18 @@ export default function Navbar({ user, signIn, signOut }) {
         {/* Right side */}
         <div className="flex items-center gap-2 ml-auto">
           {/* Light/Dark Toggle */}
-          {!isLanding && (
-            <button
-              onClick={toggleTheme}
-              className="p-1.5 rounded-md transition-colors duration-150 text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)]"
-              aria-label="Toggle theme"
-            >
-              {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
-            </button>
-          )}
+          <button
+            onClick={toggleTheme}
+            className="p-1.5 rounded-md transition-colors duration-150 text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)]"
+            aria-label="Toggle theme"
+          >
+            {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+          </button>
 
           {user ? (
             <>
               {/* Avatar + username */}
-              <div className="flex items-center gap-2 ml-2">
+              <div className="hidden sm:flex items-center gap-2 ml-2">
                 {user.user_metadata?.avatar_url && (
                   <img
                     src={user.user_metadata.avatar_url}
@@ -159,7 +178,7 @@ export default function Navbar({ user, signIn, signOut }) {
               <button
                 id="navbar-signout-btn"
                 onClick={signOut}
-                className={isLanding ? "font-sans text-[13px] font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)] rounded-md px-2.5 py-1.5 transition-colors duration-150 ml-1 flex items-center justify-center" : "font-sans text-[13px] font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)] rounded-md px-2.5 py-1.5 transition-colors duration-150 ml-1 flex items-center justify-center"}
+                className={`hidden sm:flex font-sans text-[13px] font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)] rounded-md px-2.5 py-1.5 transition-colors duration-150 ml-1 items-center justify-center`}
                 title="Sign out"
               >
                 <LogOutIcon />
@@ -170,15 +189,53 @@ export default function Navbar({ user, signIn, signOut }) {
             <button
               id="navbar-login-btn"
               onClick={signIn}
-              className={`inline-flex items-center gap-2 font-sans text-[13px] font-medium rounded-md px-3 py-1.5 btn-scale focus:outline-none ml-2 ${isLanding ? 'bg-[var(--text-primary)] text-[var(--bg-primary)]' : 'bg-[var(--accent-green)] text-[var(--bg-primary)]'}`}
+              className={`hidden sm:inline-flex items-center gap-2 font-sans text-[13px] font-medium rounded-md px-3 py-1.5 btn-scale focus:outline-none ml-2 ${isLanding ? 'bg-[var(--text-primary)] text-[var(--bg-primary)]' : 'bg-[var(--accent-green)] text-[var(--bg-primary)]'}`}
             >
               <GitHubIcon />
               Log in
             </button>
           )}
+
+          {/* Mobile Menu Toggle */}
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="md:hidden p-1.5 ml-2 rounded-md transition-colors duration-150 text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)]"
+            aria-label="Toggle mobile menu"
+          >
+            {isMobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
+          </button>
         </div>
 
       </div>
+
+      {/* Mobile Menu Dropdown */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden absolute top-14 left-0 w-full bg-[var(--bg-primary)] border-b border-[var(--border)] shadow-xl flex flex-col py-4 px-4 gap-2 z-50">
+          {user ? (
+            <>
+              <NavLink to="/explore" className={getNavLinkClass}>Explore</NavLink>
+              <NavLink to="/prcheck" className={getNavLinkClass}>PR Check</NavLink>
+              <NavLink to="/dashboard" className={getNavLinkClass}>Dashboard</NavLink>
+              <div className="h-px bg-[var(--border)] my-2 w-full" />
+              <button
+                onClick={signOut}
+                className="w-full text-left font-sans text-[13px] font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)] px-2.5 py-2 flex items-center gap-2 rounded-md"
+              >
+                <LogOutIcon />
+                Sign out
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={signIn}
+              className="w-full inline-flex items-center justify-center gap-2 font-sans text-[13px] font-medium rounded-md px-3 py-2.5 bg-[var(--accent-green)] text-[var(--bg-primary)]"
+            >
+              <GitHubIcon />
+              Log in with GitHub
+            </button>
+          )}
+        </div>
+      )}
     </nav>
   )
 }
