@@ -33,7 +33,9 @@
     },
     {
       "matches": [
-        "https://your-frontend.vercel.app/*"
+        "https://*.vercel.app/*",
+        "http://localhost:*/*",
+        "http://127.0.0.1:*/*"
       ],
       "js": ["authSync.js"]
     }
