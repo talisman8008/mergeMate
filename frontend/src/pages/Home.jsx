@@ -315,7 +315,7 @@ export default function Home({ user, signIn, signOut }) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10 w-full">
             {/* Tier 1: Free */}
             <SpotlightCard className="p-8 flex flex-col min-h-[450px]">
-              <h3 className="font-display text-[24px] font-bold text-[var(--text-primary)] mb-2">Hacker</h3>
+              <h3 className="font-display text-[24px] font-bold text-[var(--text-primary)] mb-2">Contributor</h3>
               <div className="font-display text-[48px] font-bold text-[var(--text-primary)] mb-4">₹0<span className="text-[16px] text-[var(--text-muted)] font-normal tracking-normal">/mo</span></div>
               <p className="text-[16px] text-[var(--text-muted)] mb-8 flex-1">
                 For students and beginners to land their first PR.
@@ -325,6 +325,7 @@ export default function Home({ user, signIn, signOut }) {
                 <li className="flex items-center gap-3"><Code size={16} className="text-[var(--accent-green)]" /> 5 AI PR checks per month</li>
                 <li className="flex items-center gap-3"><Code size={16} className="text-[var(--accent-green)]" /> Contribution Dashboard</li>
                 <li className="flex items-center gap-3"><Code size={16} className="text-[var(--accent-green)]" /> Chrome Extension</li>
+                <li className="flex items-center gap-3"><Code size={16} className="text-[var(--accent-green)]" /> Shareable First PR card</li>
               </ul>
               <button className="w-full py-3 rounded-lg border border-[var(--border)] bg-[var(--bg-primary)] hover:bg-[var(--bg-card-hover)] text-[var(--text-primary)] font-bold transition-all" onClick={signIn}>Get Started</button>
             </SpotlightCard>
@@ -359,9 +360,53 @@ export default function Home({ user, signIn, signOut }) {
                 <li className="flex items-center gap-3"><Activity size={16} className="text-[var(--accent-blue)]" /> Certified Badge on Feed</li>
                 <li className="flex items-center gap-3"><Activity size={16} className="text-[var(--accent-blue)]" /> Contributor Pipeline Dashboard</li>
                 <li className="flex items-center gap-3"><Activity size={16} className="text-[var(--accent-blue)]" /> Dedicated listing page</li>
-                <li className="flex items-center gap-3"><Activity size={16} className="text-[var(--accent-blue)]" /> Custom AI rules</li>
+                <li className="flex items-center gap-3"><Activity size={16} className="text-[var(--accent-blue)]" /> Custom CONTRIBUTING.md analysis</li>
               </ul>
               <button className="w-full py-3 rounded-lg border border-[var(--border)] bg-[var(--bg-primary)] hover:bg-[var(--bg-card-hover)] text-[var(--text-primary)] font-bold transition-all">Contact Sales</button>
+            </SpotlightCard>
+          </div>
+
+          <div className="mt-16 py-6 border-y border-[var(--border)] bg-[var(--bg-primary)]/40 flex flex-col md:flex-row items-center justify-center gap-6 w-full">
+            <span className="text-[15px] text-[var(--text-primary)] font-medium">
+              Hiring engineers or want quality contributors to your repo?
+            </span>
+            <div className="flex items-center gap-6 text-[14px] font-bold">
+              <a href="#" className="text-[#5B4FE3] hover:text-[#9F97F0] transition-colors inline-flex items-center gap-1">
+                Get Repo Certified &rarr;
+              </a>
+              <a href="mailto:firstmerge@gmail.com" className="text-[#5B4FE3] hover:text-[#9F97F0] transition-colors inline-flex items-center gap-1">
+                Contact Us &rarr;
+              </a>
+            </div>
+          </div>
+
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10 w-full opacity-60 hover:opacity-80 transition-opacity grayscale-[30%]">
+            {/* Coming Soon: Mentor Program */}
+            <SpotlightCard className="p-8 flex flex-col min-h-[350px] border-dashed border-[var(--border)] relative overflow-hidden">
+              <div className="w-fit mb-4 bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">Coming Soon</div>
+              <h3 className="font-display text-[24px] font-bold text-[var(--text-primary)] mb-2">Mentor Program</h3>
+              <div className="font-display text-[32px] font-bold text-[var(--text-primary)] mb-4">₹99<span className="text-[16px] text-[var(--text-muted)] font-normal tracking-normal">/student/mo</span></div>
+              <p className="text-[15px] text-[var(--text-muted)] mb-8 flex-1">
+                Senior developers guide cohorts of 10 students. Mentors earn 70% of fees.
+              </p>
+              <ul className="space-y-4 mb-2 text-[14px] text-[var(--text-primary)] font-medium">
+                <li className="flex items-center gap-3"><Code size={16} className="text-[var(--text-muted)]" /> Verified Mentor Badge</li>
+                <li className="flex items-center gap-3"><Code size={16} className="text-[var(--text-muted)]" /> 30% platform cut goes to FirstMerge</li>
+              </ul>
+            </SpotlightCard>
+
+            {/* Coming Soon: Recruiter Portal */}
+            <SpotlightCard className="p-8 flex flex-col min-h-[350px] border-dashed border-[var(--border)] relative overflow-hidden">
+              <div className="w-fit mb-4 bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">Coming Soon</div>
+              <h3 className="font-display text-[24px] font-bold text-[var(--text-primary)] mb-2">Recruiter Portal</h3>
+              <div className="font-display text-[32px] font-bold text-[var(--text-primary)] mb-4">$99<span className="text-[16px] text-[var(--text-muted)] font-normal tracking-normal">/month</span></div>
+              <p className="text-[15px] text-[var(--text-muted)] mb-8 flex-1">
+                Search verified contributors by language, PR count, and Friendliness Score.
+              </p>
+              <ul className="space-y-4 mb-2 text-[14px] text-[var(--text-primary)] font-medium">
+                <li className="flex items-center gap-3"><Activity size={16} className="text-[var(--text-muted)]" /> Merge Credits outreach system</li>
+                <li className="flex items-center gap-3"><Activity size={16} className="text-[var(--text-muted)]" /> Verified skill badges</li>
+              </ul>
             </SpotlightCard>
           </div>
         </section>

@@ -4,6 +4,7 @@ import { PieChart, Pie, Cell, AreaChart, Area, ResponsiveContainer, Tooltip } fr
 import Navbar from '../components/Navbar.jsx'
 import supabase from '../lib/supabase.js'
 import FTUETour from '../components/FTUETour.jsx'
+import ShareCardModal from '../components/ShareCardModal.jsx'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'
 
@@ -203,6 +204,7 @@ export default function Dashboard({ user, signIn, signOut }) {
   const [activeTab, setActiveTab] = useState('Saved')
   const [runTour, setRunTour] = useState(false)
   const [tourKey, setTourKey] = useState(0)
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false)
 
   useEffect(() => {
     // Only run tour if they haven't seen it yet
@@ -410,6 +412,18 @@ export default function Dashboard({ user, signIn, signOut }) {
           steps={dashboardTourSteps} 
           onJoyrideStateChange={handleJoyrideStateChange} 
         />
+        <ShareCardModal 
+          isOpen={isShareModalOpen} 
+          onClose={() => setIsShareModalOpen(false)} 
+          profile={profile}
+          stats={{
+            openPRs: isDemoMode ? seedDashData.openPRs.length : (mergedPrs.recentOpen?.length || 0),
+            mergedPRs: isDemoMode ? seedDashData.closedPRs.length : (mergedPrs.totalMerged || 0),
+            commits: totalCommits,
+            issues: stats.totalIssuesClosed
+          }}
+          languages={languages}
+        />
       </div>
 
       {isDemoMode && (
@@ -476,10 +490,13 @@ export default function Dashboard({ user, signIn, signOut }) {
             )}
           </div>
 
-          <div className="w-full mt-4">
+          <div className="w-full mt-4 flex flex-col gap-2">
             <Link to="/onboarding" className="w-full flex items-center justify-center gap-2 bg-[var(--bg-card-hover)] hover:bg-[var(--border)] text-[var(--text-primary)] border border-[var(--border)] py-2 rounded-md transition-colors text-sm font-medium">
               Update Preferences
             </Link>
+            <button onClick={() => setIsShareModalOpen(true)} className="w-full flex items-center justify-center gap-2 bg-[var(--bg-card-hover)] hover:bg-[var(--border)] text-[var(--text-primary)] border border-[var(--border)] py-2 rounded-md transition-colors text-sm font-medium">
+              Share Profile 🔗
+            </button>
           </div>
 
           <div id="tour-milestones">
