@@ -1,51 +1,76 @@
-# FirstMerge 
+# FirstMerge (formerly MergeMate)
 
-FirstMerge is an AI-powered open-source contribution companion. It helps beginner and intermediate developers find beginner-friendly open-source issues and ensures their Pull Requests (PRs) get merged instead of rejected or ignored.
+FirstMerge is an intelligent open-source onboarding platform that helps beginners find their first open-source issues, evaluate repository friendliness, and generate AI-driven step-by-step roadmaps to solve bugs with confidence. It also includes a Chrome Extension for real-time PR analysis natively on GitHub.
 
-## Core Features
+## 🚀 Deployed Links
+- **Web Platform:** [Insert Vercel URL Here]
+- **API Backend:** https://mergemate-production-59be.up.railway.app
+- **Chrome Extension:** Load unpacked from the `/extension` directory.
 
-- **Friendliness Score Engine**: Calculates a precise 0–100 score for repositories using real-time GitHub data, analyzing PR collision count, beginner PR merge rate, maintainer response time, and issue freshness.
-- **AI-Powered PR Quality Check**: Acts as an automated senior engineer reviewing code *before* maintainers do. Analyzes the code diff, original issue body, and CONTRIBUTING.md file to provide a verdict (`GENUINE` or `TRIVIAL`) and actionable suggestions.
-- **AI-Powered Issue Roadmap**: Generates a tailored, step-by-step implementation plan using AI before you write a single line of code, complete with time/complexity estimates, target files, and risks.
-- **Seamless Chrome Extension**: Integrates directly into GitHub. Automatically analyzes PRs and injects a FirstMerge dashboard into the GitHub PR discussion timeline.
-- **Gamification**: Turns open-source contribution into a game with contribution heatmaps, streak tracking, and medals.
+## 💡 Key Features
+1. **Curated Issue Discovery:** Automatically aggregates "good first issues" and beginner-friendly tasks across GitHub.
+2. **Friendliness Score:** Dynamically scores repositories (0-100) based on maintainer response times, beginner PR merge rates, issue freshness, and PR collisions to ensure beginners only pick battles they can win.
+3. **AI-Powered Roadmaps:** Generates a step-by-step, actionable checklist (via Gemini AI) to guide you through solving an issue before you even clone the repo.
+4. **Chrome Extension Auto-Analysis:** Natively injects into GitHub's Pull Request page, analyzing your code and comparing it to the linked issue *before* you hit submit to ensure high quality.
+5. **Personalized Dashboard:** Save issues, track your open-source journey, and share your contributor profile.
 
-## Project Structure
+## 🛠️ Tech Stack
 
-- `/frontend` - The web application frontend (dashboard, explore page).
-- `/backend` - The backend API handling authentication, GitHub API interactions, and AI integrations.
-- `/extension` - The Chrome extension that injects into GitHub pull request pages.
+### Frontend Layer (Web App)
+- **Framework:** React + Vite
+- **Routing:** React Router
+- **Styling:** Tailwind CSS / Vanilla CSS (Modern, dark-mode, glassmorphic UI)
+- **Deployment:** Vercel
 
-## Installation & Setup
+### Backend Layer (API)
+- **Framework:** Express.js (Node.js)
+- **Deployment:** Railway
+- **Rate Limiting & Security:** Helmet, Express-Rate-Limit, CORS (locked to frontend domain), SSRF-safe URL parsing
+
+### AI & Data Pipeline
+- **AI Integration:** Google Gemini API (with 3-key rotation & XML sanitization)
+- **GitHub Integration:** GitHub REST API & GraphQL API (batched queries)
+- **Database & Cache:** Supabase (PostgreSQL) for 1-hour issue caching and 2-hour Repo Score caching
+- **Authentication:** Supabase GitHub OAuth (JWT)
+
+### Chrome Extension
+- **Environment:** Manifest V3
+- **Injection:** Real-time DOM MutationObserver for GitHub SPA compatibility (Turbo/pjax)
+- **Auth Syncing:** Cross-domain token syncing from the Vercel web app to the extension.
+
+## 📁 Repository Structure
+- `/frontend`: The React + Vite web application.
+- `/backend`: The Express.js API server handling GitHub data, AI processing, and Supabase caching.
+- `/extension`: The Chrome extension source code.
+
+## 💻 Local Development
 
 ### Prerequisites
-- Node.js
-- npm or yarn
+- Node.js (v18+)
+- Supabase Project (Database & Auth setup)
+- GitHub Personal Access Token
+- Google Gemini API Key
 
-### 1. Web Application (Frontend & Backend)
-
-**Backend:**
+### 1. Setup Backend
 ```bash
 cd backend
 npm install
-# Add your .env variables (Supabase, GitHub API, Google Gemini, etc.)
-npm start
-```
-
-**Frontend:**
-```bash
-cd frontend
-npm install
+# Create a .env file with your SUPABASE_URL, SUPABASE_SERVICE_KEY, GITHUB_TOKEN, and GEMINI API keys.
 npm run dev
 ```
 
-### 2. How to Install the Chrome Extension
+### 2. Setup Frontend
+```bash
+cd frontend
+npm install
+# Create a .env file with VITE_BACKEND_URL and VITE_SUPABASE keys.
+npm run dev
+```
 
-To install the FirstMerge Chrome extension locally for development, follow these steps:
+### 3. Setup Extension
+1. Open Chrome and navigate to `chrome://extensions/`
+2. Enable **Developer mode**
+3. Click **Load unpacked** and select the `/extension` folder in this repository.
 
-1. Open Google Chrome (or any Chromium-based browser like Edge, Brave).
-2. Navigate to the Extensions management page by typing `chrome://extensions/` in your address bar and hitting Enter.
-3. Enable **"Developer mode"** by toggling the switch in the top right corner of the page.
-4. Click the **"Load unpacked"** button that appears in the top left corner.
-5. In the file dialog that opens, navigate to your project directory and select the `extension` folder (e.g., `Desktop/mergeMate/extension`).
-6. The FirstMerge extension is now installed! It will automatically activate and provide zero-click analysis when you view a Pull Request on GitHub.
+---
+*Built to empower the next generation of open-source contributors.*
